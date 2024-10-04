@@ -1,9 +1,11 @@
 package es.ujaen.dae.clubSocios.entidades;
 
+import es.ujaen.dae.clubSocios.excepciones.InvalidoAnio;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDate;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -36,5 +38,11 @@ public class Temporada {
 
     public int getAnio() {
         return anio;
+    }
+
+    public void setAnio(int anio){
+        if (anio > LocalDate.EPOCH.getYear())
+            throw new InvalidoAnio("Este no es el anio actual");
+        this.anio = anio;
     }
 }

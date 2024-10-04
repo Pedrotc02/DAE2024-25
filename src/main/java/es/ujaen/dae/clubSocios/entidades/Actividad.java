@@ -1,6 +1,7 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
+import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
@@ -18,6 +19,9 @@ public class Actividad {
     private double precio;
     @PositiveOrZero
     private int plazasDisponibles;
+
+    @PositiveOrZero
+    private int totalPlazas;
     @Future
     private LocalDate fechaCelebracion;
     @FutureOrPresent
@@ -25,20 +29,22 @@ public class Actividad {
     @Future
     private LocalDate fechaFinInscripcion;
     private List<Solicitud> solicitudes;
-    @NotNull
+    @NotBlank
     private EstadoActividad estado;
 
     public Actividad() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Actividad(String id, String titulo, String descripcion, double precio, int plazasDisponibles,
-                     LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
+    public Actividad(String id, String titulo, String descripcion, double precio,
+                     int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.precio = precio;
-        this.plazasDisponibles = plazasDisponibles;
+        //las plazas disponibles inicialmente son iguales al total de plazas
+        this.plazasDisponibles = totalPlazas;
+        this.totalPlazas = totalPlazas;
         this.fechaCelebracion = fechaCelebracion;
         this.fechaInicioInscripcion = fechaInicioInscripcion;
         this.fechaFinInscripcion = fechaFinInscripcion;
@@ -55,7 +61,10 @@ public class Actividad {
     }
 
     public void asignarPlazas() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (plazasDisponibles > 0)
+            throw new PlazasNoDisponibles("No hay plazas disponibles para esta actividad");
+        // decrementar las plazas en 1 al asignarlas (de momento aquí, seguramente acabe estando en el servicio)
+        plazasDisponibles--;
     }
 
     public boolean estaEnPeriodoInscripcion() {
