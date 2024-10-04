@@ -30,7 +30,8 @@ public class Socio {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Socio(String socioId, String nombre, String apellidos, String email, String tlf, String claveAcceso, EstadoCuota estadoCuota) {
+    public Socio(String socioId, String nombre, String apellidos, String email, String tlf, String claveAcceso,
+                 EstadoCuota estadoCuota) {
         this.socioId = socioId;
         this.nombre = nombre;
         this.apellidos = apellidos;

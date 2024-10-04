@@ -32,7 +32,8 @@ public class Actividad {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public Actividad(String id, String titulo, String descripcion, double precio, int plazasDisponibles, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
+    public Actividad(String id, String titulo, String descripcion, double precio, int plazasDisponibles,
+                     LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
