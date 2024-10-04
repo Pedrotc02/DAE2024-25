@@ -2,4 +2,4 @@
 Prácticas de Desarrollo de Aplicaciones Empresariales 2024/25
 
 ## Diagrama UML
-![](images/diagrama.png)
+![Diagrama principal](images/diagrama.png)

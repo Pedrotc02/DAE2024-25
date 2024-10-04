@@ -1,0 +1,97 @@
+@startuml
+class Temporada <<entity>> {
+    -TemporadaId id
+    -int año
+    +añadirActividad(Actividad)
+    +obtenerActividades()
+}
+
+note "Utilizar SortedMap<Actividad> para tener ordenacion inherente" as N3
+N3 .. Temporada
+
+class Socio <<entity>> {
+    -SocioId id
+    -Nombre nombre
+    -Apellido apellido
+    -Email email
+    -Telefono telefono
+    -ClaveAcceso claveAcceso
+    -EstadoCuota estadoCuota
+    +solicitarInscripcion(Actividad, int numAcompañantes)
+    +modificarSolicitud(Solicitud)
+    +borrarSolicitud(Solicitud)
+}
+
+note "Maximo 5 acompañantes\nLos acompañantes entran solo si hay plazas sobrantes\nSi un Socio no ha pagado la cuota, actua como un Acompañante\nmodificarSolicitud() solo estaEnPeriodoInscripcion()" as N2
+Socio .. N2
+
+class Actividad <<entity>> {
+    -ActividadId id
+    -Titulo titulo
+    -Descripcion descripcion
+    -Precio precio
+    -int plazasDisponibles
+    -FechaActividad fechaCelebracion
+    -FechaIncioInscripcion fechaInicioInscripcion
+    -FechaFinInscripcion fechaFinInscripcion
+    -List<Solicitud> solicitudes
+    -EstadoActividad estado
+    +agregarSolicitud(Solicitud)
+    +quitarSolicitud(Solicitud)
+    +asignarPlazas()
+    +estaEnPeriodoInscripcion(): boolean
+    +cambiarEstado(EstadoActividad)
+}
+
+note "FechaActividad después que fechaInicioInscripcion\ny fechaFinInscripcion" as N1
+Actividad .. N1
+
+class Solicitud <<entity>> {
+    -SolicitudId id
+    -Socio socio
+    -int numAcompañantes
+    -EstadoSolicitud estado
+    +modificarNumAcompañantes(int)
+    +eliminarAcompañante()
+    +cancelar()
+    +estaCompleta(): boolean
+}
+
+class ServicioClub <<service>> {
+    +crearSocio(DatosSocio)
+    +actualizarEstadoCuota(SocioId, EstadoCuota)
+    +crearActividad(DatosActividad)
+    +revisarSolicitudes(ActividadId)
+    +asignarPlazasFinales(ActividadId)
+    +resetearEstadoCuota()
+}
+
+class EstadoActividad <<enumerator>> {
+    ABIERTA
+    CERRADA
+    EN_CURSO
+    FINALIZADA
+}
+
+class EstadoCuota <<enumerator>> {
+    PAGADA
+    PENDIENTE
+}
+
+class EstadoSolicitud <<enumerator>> {
+    PENDIENTE
+    CONFIRMADA
+    CANCELADA
+}
+
+Temporada  *-- Actividad
+Actividad *-- Solicitud
+Socio --* Solicitud
+EstadoCuota .. Socio
+EstadoSolicitud .. Solicitud
+EstadoActividad .. Actividad
+ServicioClub --> Actividad
+ServicioClub --> Temporada
+ServicioClub --> Socio
+
+@enduml
