@@ -1,10 +1,7 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public class Solicitud {
     @NotBlank
@@ -12,7 +9,7 @@ public class Solicitud {
     @NotBlank
     Socio socio;
     @NotBlank
-    @Min(1)
+    @Min(0) @Max(5)
     int numAcompanantes;
     @NotBlank
     EstadoSolicitud estadoSolicitud;
