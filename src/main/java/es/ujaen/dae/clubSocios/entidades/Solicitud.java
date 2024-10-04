@@ -5,14 +5,13 @@ import jakarta.validation.constraints.*;
 
 public class Solicitud {
     @NotBlank
-    String socioId;
-    @NotBlank
-    Socio socio;
-    @NotBlank
+    private String socioId;
+    @NotNull
+    private Socio socio;
     @Min(0) @Max(5)
-    int numAcompanantes;
-    @NotBlank
-    EstadoSolicitud estadoSolicitud;
+    private int numAcompanantes;
+    @NotNull
+    private EstadoSolicitud estadoSolicitud;
 
     public Solicitud(String socioId, Socio socio, int numAcompanantes, EstadoSolicitud estadoSolicitud) {
         this.socioId = socioId;
@@ -21,6 +20,29 @@ public class Solicitud {
         this.estadoSolicitud = estadoSolicitud;
     }
 
+    public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
+        if (nuevoNumAcompanantes >= 0 && nuevoNumAcompanantes <= 5) {
+            this.numAcompanantes = nuevoNumAcompanantes;
+        } else {
+            throw new IllegalArgumentException("El número de acompañantes debe estar entre 0 y 5");
+        }
+    }
+
+    public void eliminarAcompanante() {
+        if (numAcompanantes > 0) {
+            numAcompanantes--;
+        }
+    }
+
+    public void cancelar() {
+        this.estadoSolicitud = EstadoSolicitud.CANCELADA;
+    }
+
+    public boolean estaCompleta() {
+        return this.estadoSolicitud == EstadoSolicitud.CONFIRMADA;
+    }
+
+    // Getters
     public String getSocioId() {
         return socioId;
     }

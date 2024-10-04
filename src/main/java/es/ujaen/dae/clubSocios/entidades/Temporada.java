@@ -1,10 +1,17 @@
 package es.ujaen.dae.clubSocios.entidades;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class Temporada {
+    @NotBlank
     private String temporadaId;
+    @Min(2000)
+    @Max(9999)
     private int anio;
     private SortedMap<String, Actividad> actividades;
 
