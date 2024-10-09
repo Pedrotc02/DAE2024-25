@@ -1,7 +1,6 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
-import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

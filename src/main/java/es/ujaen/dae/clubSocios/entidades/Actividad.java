@@ -5,6 +5,7 @@ import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,4 +123,16 @@ public class Actividad {
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
     }
+
+
 }
+
+//    EstadoActividad estadoActual() {
+//        var fechaActual = LocalDateTime.now();
+//
+//        if (fechaActual.isBefore(fechaInicioInscripcion))
+//            return PENDIENTE;
+//        else if (fechaActual.isBefore(fechaFinInscripcion))
+//            return PERIODO_INSCRIPCION;
+//    ...
+//    }
