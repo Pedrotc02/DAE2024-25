@@ -60,11 +60,18 @@ public class Actividad {
         solicitudes.remove(solicitud);
     }
 
-    public void asignarPlazas() {
-        if (plazasDisponibles > 0)
-            throw new PlazasNoDisponibles("No hay plazas disponibles para esta actividad");
-        // decrementar las plazas en 1 al asignarlas (de momento aquí, seguramente acabe estando en el servicio)
-        plazasDisponibles--;
+    public void asignarPlazas(int numPlazas) {
+        if (plazasDisponibles == 0)
+            throw new PlazasNoDisponibles("No quedan plazas en esta actividad");
+
+        if (numPlazas > plazasDisponibles)
+            throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo + ", hay: " + plazasDisponibles + " y quieres reservar: " + numPlazas);
+
+        for (int i = 0; i < numPlazas; i++) {
+            plazasDisponibles--;
+        }
+
+        System.out.println("Plazas disponibles: " + plazasDisponibles);
     }
 
     public boolean estaEnPeriodoInscripcion() {
@@ -122,4 +129,5 @@ public class Actividad {
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
     }
+
 }

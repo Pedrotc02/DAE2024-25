@@ -2,12 +2,11 @@ package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 public class Socio {
+
     @NotBlank
     @Pattern(regexp = "^\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]$", message = "DNI no válido")
     private String socioId;
@@ -26,10 +25,6 @@ public class Socio {
     @NotNull
     private EstadoCuota estadoCuota;
 
-    public Socio() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public Socio(String socioId, String nombre, String apellidos, String email, String tlf, String claveAcceso,
                  EstadoCuota estadoCuota) {
         this.socioId = socioId;
@@ -41,8 +36,11 @@ public class Socio {
         this.estadoCuota = estadoCuota;
     }
 
-    public Solicitud solicitarInscripcion(Actividad actividad, int numAcompanantes) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Solicitud solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
+
+        actividad.asignarPlazas(numAcompanantes + 1);
+
+        return new Solicitud(this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
     }
 
     public void modificarSolicitud(Solicitud solicitud) {
