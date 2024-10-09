@@ -26,7 +26,7 @@ public class ServicioClub {
         if(socios.containsKey(socio.getSocioId())){
             throw new SocioYaRegistrado();
         }
-
+        
         socios.put(socio.getSocioId(), socio);
     }
 
