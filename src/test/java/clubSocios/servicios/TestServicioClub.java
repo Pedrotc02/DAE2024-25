@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class)
 public class TestServicioClub {
@@ -49,6 +50,16 @@ public class TestServicioClub {
         assertThat(servicio.login("error@gmail.com", "prueba")).isEmpty();
         assertThat(servicio.login("prueba@gmail.com", "claveError")).isEmpty();
         assertThat(servicio.login("prueba@gmail.com", "123456")).hasValueSatisfying(s -> s.getEmail().equals(socio.getEmail()));
+    }
+
+    @Test
+    @DirtiesContext
+    void testActualizaEstado() {
+        var socio = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio);
+
+        servicio.actualizarEstadoCuota(socio.getEmail(), EstadoCuota.PAGADA);
+        assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
     }
 
 

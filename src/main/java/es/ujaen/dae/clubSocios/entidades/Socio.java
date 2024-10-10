@@ -80,4 +80,10 @@ public class Socio {
     public EstadoCuota getEstadoCuota() {
         return estadoCuota;
     }
+
+    // Setters
+
+    public void setEstadoCuota(EstadoCuota estadoCuota) {
+        this.estadoCuota = estadoCuota;
+    }
 }

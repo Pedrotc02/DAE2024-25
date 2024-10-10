@@ -35,8 +35,8 @@ public class ServicioClub {
         return (socio != null && socio.getClaveAcceso().equals(clave)) ? Optional.of(socio): Optional.empty();
     }
 
-    public void actualizarEstadoCuota(String socioId, EstadoCuota estadoCuota) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
+        socios.get(email).setEstadoCuota(estadoCuota);
     }
 
     public Actividad crearActividad(/* parameters */) {
