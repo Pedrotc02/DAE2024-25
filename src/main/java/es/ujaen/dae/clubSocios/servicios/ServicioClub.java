@@ -23,11 +23,11 @@ public class ServicioClub {
     }
 
     public void crearSocio(@Valid Socio socio) {
-        if(socios.containsKey(socio.getSocioId())){
+        if(socios.containsKey(socio.getEmail())){
             throw new SocioYaRegistrado();
         }
         
-        socios.put(socio.getSocioId(), socio);
+        socios.put(socio.getEmail(), socio);
     }
 
     public Optional<Socio> login(@Email String email, String clave){
