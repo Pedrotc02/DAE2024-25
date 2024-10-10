@@ -30,7 +30,6 @@ public class Actividad {
     @Future
     private LocalDate fechaFinInscripcion;
     private List<Solicitud> solicitudes;
-    @NotBlank
     private EstadoActividad estado;
 
     public Actividad() {

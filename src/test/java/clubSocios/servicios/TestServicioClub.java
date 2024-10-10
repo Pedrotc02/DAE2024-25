@@ -1,7 +1,9 @@
 package clubSocios.servicios;
 
+import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
+import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
@@ -12,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,6 +65,22 @@ public class TestServicioClub {
 
         servicio.actualizarEstadoCuota(socio.getEmail(), EstadoCuota.PAGADA);
         assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
+    }
+
+    @Test
+    @DirtiesContext
+    void testNuevaActividad(){
+        //Precio incorrecto, plazas incorrectas, violaciones fecha
+        var actividad = new Actividad("act1", "Visita a museo", "Descricion", -10, -15, LocalDate.of(2023,10,13), LocalDate.of(2023,9,13), LocalDate.of(2023,10,10));
+
+
+        assertThatThrownBy(() -> servicio.crearActividad(actividad)).isInstanceOf(ConstraintViolationException.class);
+
+        //Actividad repetida
+        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,10,13), LocalDate.of(2024,10,13), LocalDate.of(2024,10,15));
+        servicio.crearActividad(actividad2);
+        assertThatThrownBy(() -> servicio.crearActividad(actividad2)).isInstanceOf(SocioYaRegistrado.class);
+
     }
 
 

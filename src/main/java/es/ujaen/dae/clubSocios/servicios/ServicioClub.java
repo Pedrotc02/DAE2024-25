@@ -3,6 +3,7 @@ package es.ujaen.dae.clubSocios.servicios;
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -17,9 +18,11 @@ import java.util.TreeMap;
 @Validated
 public class ServicioClub {
     Map<String, Socio> socios;
+    Map<String, Actividad> actividades;
 
     public ServicioClub() {
         this.socios = new TreeMap<>();
+        this.actividades = new TreeMap<>();
     }
 
     public void crearSocio(@Valid Socio socio) {
@@ -39,8 +42,12 @@ public class ServicioClub {
         socios.get(email).setEstadoCuota(estadoCuota);
     }
 
-    public Actividad crearActividad(/* parameters */) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void crearActividad(@Valid Actividad actividad) {
+        if(actividades.containsKey(actividad.getId())){
+            throw new ActividadYaRegistrada();
+        }
+
+        actividades.put(actividad.getId(), actividad);
     }
 
     public void revisarSolicitudes(String actividadId) {
