@@ -126,12 +126,3 @@ public class Actividad {
 
 }
 
-//    EstadoActividad estadoActual() {
-//        var fechaActual = LocalDateTime.now();
-//
-//        if (fechaActual.isBefore(fechaInicioInscripcion))
-//            return PENDIENTE;
-//        else if (fechaActual.isBefore(fechaFinInscripcion))
-//            return PERIODO_INSCRIPCION;
-//    ...
-//    }

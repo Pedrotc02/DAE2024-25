@@ -59,6 +59,9 @@ public class ServicioClub {
     }
 
     public void resetearEstadoCuota() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for(Socio socio :  socios.values()){
+            socio.setEstadoCuota(EstadoCuota.PENDIENTE);
+        }
+
     }
 }

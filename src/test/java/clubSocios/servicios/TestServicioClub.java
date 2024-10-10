@@ -5,6 +5,7 @@ import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 import jakarta.validation.ConstraintViolationException;
@@ -73,13 +74,28 @@ public class TestServicioClub {
         //Precio incorrecto, plazas incorrectas, violaciones fecha
         var actividad = new Actividad("act1", "Visita a museo", "Descricion", -10, -15, LocalDate.of(2023,10,13), LocalDate.of(2023,9,13), LocalDate.of(2023,10,10));
 
-
         assertThatThrownBy(() -> servicio.crearActividad(actividad)).isInstanceOf(ConstraintViolationException.class);
 
         //Actividad repetida
         var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,10,13), LocalDate.of(2024,10,13), LocalDate.of(2024,10,15));
         servicio.crearActividad(actividad2);
-        assertThatThrownBy(() -> servicio.crearActividad(actividad2)).isInstanceOf(SocioYaRegistrado.class);
+        assertThatThrownBy(() -> servicio.crearActividad(actividad2)).isInstanceOf(ActividadYaRegistrada.class);
+
+    }
+
+    @Test
+    @DirtiesContext
+    void testResetearEstadoCuota(){
+        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio2 = new Socio("22222222M", "Edu", "Apellido1 Apellido2", "edu@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+
+        servicio.crearSocio(socio1);
+        servicio.crearSocio(socio2);
+
+        servicio.resetearEstadoCuota();
+
+        assertEquals("El estado debe estar en Pendiente", EstadoCuota.PENDIENTE, socio1.getEstadoCuota());
+        assertEquals("El estado debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2.getEstadoCuota());
 
     }
 
