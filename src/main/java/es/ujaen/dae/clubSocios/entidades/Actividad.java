@@ -5,6 +5,7 @@ import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,9 @@ public class Actividad {
     @Future
     private LocalDate fechaFinInscripcion;
     private List<Solicitud> solicitudes;
+
     @NotNull
+
     private EstadoActividad estado;
 
     public Actividad() {
@@ -127,5 +130,5 @@ public class Actividad {
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
     }
-
 }
+

@@ -1,8 +1,15 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import jakarta.validation.constraints.*;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
 
 public class Socio {
 
@@ -77,5 +84,11 @@ public class Socio {
 
     public EstadoCuota getEstadoCuota() {
         return estadoCuota;
+    }
+
+    // Setters
+
+    public void setEstadoCuota(EstadoCuota estadoCuota) {
+        this.estadoCuota = estadoCuota;
     }
 }
