@@ -2,7 +2,6 @@ package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 public class Socio {

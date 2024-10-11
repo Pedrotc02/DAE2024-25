@@ -21,9 +21,8 @@ public class Solicitud {
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
-        if (nuevoNumAcompanantes < 0 ) {
-            throw new IllegalArgumentException("El número de acompañantes debe ser mayor que 0");
-        }
+        if (nuevoNumAcompanantes < 0 || nuevoNumAcompanantes > 5)
+            throw new IllegalArgumentException("El número de acompañantes debe ser mayor que 0 y menor que 5");
 
         this.numAcompanantes = nuevoNumAcompanantes;
     }

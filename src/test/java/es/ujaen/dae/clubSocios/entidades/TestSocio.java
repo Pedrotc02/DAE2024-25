@@ -1,22 +1,30 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import jakarta.validation.*;
+
+import java.util.Set;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
-
-import static net.bytebuddy.matcher.ElementMatchers.is;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.not;
 
 public class TestSocio {
 
     @Test
     @DirtiesContext
-    public void socioValido() {
-        var socio1 = new Socio("1", "Pepito", "Fernández", "pepfer@gamil.com", "653398283", "holamundo", EstadoCuota.PENDIENTE);
+    void testValidacionSocio() {
+        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com", "645367898", "pepfer", EstadoCuota.PENDIENTE);
 
-        var socio2 = new Socio("2", "Juan", "Jiménez", "jujim@gmail.com", "678324567", "jujin", EstadoCuota.PENDIENTE);
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<Socio>> violations = validator.validate(socio1);
 
-        assertThat(socio1).isNotEqualTo(socio2);
+        assertThat(violations).isEmpty();
+
+        var socio2 = new Socio("2345678A", "", "Fernández", "pepfergamil.com", "64536714", "pepfer", EstadoCuota.PENDIENTE);
+
+        violations = validator.validate(socio2);
+
+        assertThat(violations).isNotEmpty();
     }
 }

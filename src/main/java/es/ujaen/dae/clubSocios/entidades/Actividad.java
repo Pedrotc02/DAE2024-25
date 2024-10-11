@@ -20,7 +20,7 @@ public class Actividad {
     @PositiveOrZero
     private int plazasDisponibles;
 
-    @PositiveOrZero
+    @Positive
     private int totalPlazas;
     @Future
     private LocalDate fechaCelebracion;
@@ -29,7 +29,7 @@ public class Actividad {
     @Future
     private LocalDate fechaFinInscripcion;
     private List<Solicitud> solicitudes;
-    @NotBlank
+    @NotNull
     private EstadoActividad estado;
 
     public Actividad() {
@@ -62,16 +62,14 @@ public class Actividad {
 
     public void asignarPlazas(int numPlazas) {
         if (plazasDisponibles == 0)
-            throw new PlazasNoDisponibles("No quedan plazas en esta actividad");
+            throw new PlazasNoDisponibles("No quedan plazas en la actividad: " + this.titulo);
 
         if (numPlazas > plazasDisponibles)
-            throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo + ", hay: " + plazasDisponibles + " y quieres reservar: " + numPlazas);
+            throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo);
 
         for (int i = 0; i < numPlazas; i++) {
             plazasDisponibles--;
         }
-
-        System.out.println("Plazas disponibles: " + plazasDisponibles);
     }
 
     public boolean estaEnPeriodoInscripcion() {
