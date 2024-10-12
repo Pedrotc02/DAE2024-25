@@ -48,13 +48,13 @@ public class Socio {
         this.solicitudes = new ArrayList<>();
     }
 
-    public Solicitud solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
+    public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
 
         actividad.asignarPlazas(numAcompanantes + 1);
 
         String solicitudId = this.socioId + "-" + System.currentTimeMillis();
 
-        return new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
+        solicitudes.add(new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE));
     }
 
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
