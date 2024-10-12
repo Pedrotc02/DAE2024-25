@@ -1,6 +1,7 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
+import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
@@ -20,7 +21,6 @@ public class Actividad {
     private double precio;
     @PositiveOrZero
     private int plazasDisponibles;
-
     @Positive
     private int totalPlazas;
     @Future
@@ -30,10 +30,6 @@ public class Actividad {
     @Future
     private LocalDate fechaFinInscripcion;
     private List<Solicitud> solicitudes;
-
-    @NotNull
-
-    private EstadoActividad estado;
 
     public Actividad() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -52,36 +48,24 @@ public class Actividad {
         this.fechaInicioInscripcion = fechaInicioInscripcion;
         this.fechaFinInscripcion = fechaFinInscripcion;
         this.solicitudes = new ArrayList<>();
-        this.estado = EstadoActividad.ABIERTA;
     }
 
     public void agregarSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
     }
 
+    // TODO: hacer esto por solicitudId
     public void quitarSolicitud(Solicitud solicitud) {
         solicitudes.remove(solicitud);
     }
 
-    public void asignarPlazas(int numPlazas) {
-        if (plazasDisponibles == 0)
-            throw new PlazasNoDisponibles("No quedan plazas en la actividad: " + this.titulo);
-
-        if (numPlazas > plazasDisponibles)
-            throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo);
-
-        for (int i = 0; i < numPlazas; i++) {
-            plazasDisponibles--;
-        }
+    public void asignarPlazas(int numPlazasPedidas) {
+        // TODO: ver si este metodo sirve para algo o quitarlo
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public boolean estaEnPeriodoInscripcion() {
-        LocalDate now = LocalDate.now();
-        return !now.isBefore(fechaInicioInscripcion) && !now.isAfter(fechaFinInscripcion);
-    }
-
-    public void cambiarEstado(EstadoActividad nuevoEstado) {
-        this.estado = nuevoEstado;
+        return getEstado() == EstadoActividad.ABIERTA;
     }
 
     // Getters
@@ -124,7 +108,18 @@ public class Actividad {
     }
 
     public EstadoActividad getEstado() {
-        return estado;
+        LocalDate fechaActual = LocalDate.now();
+        if (fechaActual.isBefore(fechaInicioInscripcion)) {
+            return EstadoActividad.PENDIENTE;
+        } else if (fechaActual.isBefore(fechaFinInscripcion)) {
+            return EstadoActividad.ABIERTA;
+        } else if (fechaActual.isBefore(fechaCelebracion)) {
+            return EstadoActividad.CERRADA;
+        } else if (fechaActual.isEqual(fechaCelebracion)) {
+            return EstadoActividad.EN_CURSO;
+        } else {
+            return EstadoActividad.FINALIZADA;
+        }
     }
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {

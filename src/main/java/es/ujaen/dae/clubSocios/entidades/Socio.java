@@ -1,5 +1,6 @@
 package es.ujaen.dae.clubSocios.entidades;
 
+import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
@@ -48,13 +49,38 @@ public class Socio {
         this.solicitudes = new ArrayList<>();
     }
 
+
     public Solicitud solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
 
-        actividad.asignarPlazas(numAcompanantes + 1);
+        EstadoSolicitud estadoSolicitud = generarEstadoSolicitud(actividad, numAcompanantes);
+        String solicitudId = generarSolicitudId();
 
-        String solicitudId = this.socioId + "-" + System.currentTimeMillis();
+        return new Solicitud(solicitudId, this.socioId, this, numAcompanantes, estadoSolicitud);
+    }
 
-        return new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
+    private String generarSolicitudId() {
+        // TODO: mejorar esto
+        return this.socioId + "-" + System.currentTimeMillis();
+    }
+
+    private EstadoSolicitud generarEstadoSolicitud(Actividad actividad, int numAcompanantes) {
+        if (actividad.getEstado() == EstadoActividad.ABIERTA) {
+            // La actividad esta en periodo de inscripcion
+
+            if (actividad.getPlazasDisponibles() >= numAcompanantes + 1) {
+                // Hay suficiente sitio para el socio y sus acompañantes
+                return EstadoSolicitud.CONFIRMADA;
+            } else if ((actividad.getPlazasDisponibles() >= 1)) {
+                // Hay sitio para el socio pero no para todos los acompañantes
+                return EstadoSolicitud.PENDIENTE;
+            } else {
+                // No quedan plazas
+                return EstadoSolicitud.RECHAZADA;
+            }
+        } else {
+            // Fuera del periodo de inscripcion
+            return EstadoSolicitud.INVALIDA;
+        }
     }
 
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
@@ -64,14 +90,14 @@ public class Socio {
     }
 
     public void borrarSolicitud(String solicitudId) {
-        for (int i = solicitudes.size() -1; i >= 0; i--) {
-            if(solicitudes.get(i).getSolicitudId().equals(solicitudId)){
+        for (int i = solicitudes.size() - 1; i >= 0; i--) {
+            if (solicitudes.get(i).getSolicitudId().equals(solicitudId)) {
                 solicitudes.remove(i);
             }
         }
     }
 
-    public void anadirSolicitud(Solicitud solicitud){
+    public void anadirSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
     }
 

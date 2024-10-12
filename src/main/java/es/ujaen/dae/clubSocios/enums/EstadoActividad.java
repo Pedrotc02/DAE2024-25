@@ -4,5 +4,6 @@ public enum EstadoActividad {
     ABIERTA,
     CERRADA,
     EN_CURSO,
-    FINALIZADA
+    FINALIZADA,
+    PENDIENTE
 }
