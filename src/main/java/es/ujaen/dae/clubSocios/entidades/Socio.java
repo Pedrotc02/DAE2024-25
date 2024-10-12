@@ -50,11 +50,28 @@ public class Socio {
 
     public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
 
-        actividad.asignarPlazas(numAcompanantes + 1);
+        //Primero se comprueba si hay hueco en la actividad, si no hay la solicitud es cancelada
+        if (actividad.hayPlazas()){
+            //Si hay hueco, se comprueba si el socio ha pagado la cuota, si no la solicitud estará en pendiente
+            if(this.getEstadoCuota().equals(EstadoCuota.PAGADA)){
+                //Se ocupa un lugar de las plazas
+                actividad.asignarPlazas(1);
 
-        String solicitudId = this.socioId + "-" + System.currentTimeMillis();
-
-        solicitudes.add(new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE));
+                //Si hay mas de un acompañante la solicitud se pasa a parcial para una posterior revision
+                if(numAcompanantes > 0){
+                    String solicitudId = this.socioId + "-" + System.currentTimeMillis();
+                    solicitudes.add(new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PARCIAL));
+                }
+                //Si es un unico participante se cierra la solicitud como confirmada
+                String solicitudId = this.socioId + "-" + System.currentTimeMillis();
+                solicitudes.add(new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.CERRADA));
+            }
+            String solicitudId = this.socioId + "-" + System.currentTimeMillis();
+            solicitudes.add(new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE));
+        } else {
+            String solicitudId = this.socioId + "-" + System.currentTimeMillis();
+            solicitudes.add(new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.CANCELADA));
+        }
     }
 
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {

@@ -127,6 +127,7 @@ public class Actividad {
         return estado;
     }
 
+    public boolean hayPlazas() { return plazasDisponibles > 0;}
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
     }

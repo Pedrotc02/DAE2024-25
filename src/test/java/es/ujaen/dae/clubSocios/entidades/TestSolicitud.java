@@ -35,12 +35,10 @@ public class TestSolicitud {
     @Test
     @DirtiesContext
     void testNumeroAcompanantesValidos() {
+        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com", "653398283", "pepifer", EstadoCuota.PENDIENTE);
+        var actividad = new Actividad("act1", "Clases de Flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-06"), LocalDate.parse("2024-10-11"));
+        var solicitud = new Solicitud("solicitud-1", "12345678A", socio1, 4, EstadoSolicitud.PENDIENTE);
 
-        var actividad = new Actividad("1", "Clases de Flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-06"), LocalDate.parse("2024-10-11"));
-        var socio1 = new Socio("1", "Pepito", "Fernández", "pepfer@gamil.com", "653398283", "holamundo", EstadoCuota.PENDIENTE);
-
-        var solicitud1 = socio1.solicitarInscripcion(actividad, 4);
-
-        assertThat(solicitud1.getNumAcompanantes()).isLessThanOrEqualTo(5);
+        assertThat(solicitud.getNumAcompanantes()).isLessThanOrEqualTo(5);
     }
 }

@@ -2,6 +2,9 @@ package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import jakarta.validation.constraints.*;
+import org.springframework.cglib.core.Local;
+
+import java.time.LocalDate;
 
 public class Solicitud {
     @NotBlank
@@ -14,6 +17,8 @@ public class Solicitud {
     private int numAcompanantes;
     @NotNull
     private EstadoSolicitud estadoSolicitud;
+    @Past
+    private LocalDate fechaSolicitud;
 
     public Solicitud(String solicitudId, String socioId, Socio socio, int numAcompanantes, EstadoSolicitud estadoSolicitud) {
         this.solicitudId = solicitudId;
@@ -21,6 +26,7 @@ public class Solicitud {
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
         this.estadoSolicitud = estadoSolicitud;
+        this.fechaSolicitud = LocalDate.now();
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -41,7 +47,7 @@ public class Solicitud {
     }
 
     public boolean estaCompleta() {
-        return this.estadoSolicitud == EstadoSolicitud.CONFIRMADA;
+        return this.estadoSolicitud == EstadoSolicitud.CERRADA;
     }
 
     // Getters
@@ -61,6 +67,14 @@ public class Solicitud {
         return numAcompanantes;
     }
 
+    public LocalDate getFechaSolicitud() {
+        return fechaSolicitud;
+    }
+
+    public void setFechaSolicitud(LocalDate fechaSolicitud) {
+        this.fechaSolicitud = fechaSolicitud;
+    }
+
     public EstadoSolicitud getEstadoSolicitud() {
         return estadoSolicitud;
     }
@@ -70,4 +84,10 @@ public class Solicitud {
     public void setNumAcompanantes(int numAcompanantes) {
         this.numAcompanantes = numAcompanantes;
     }
+
+    public void setEstadoSolicitud(EstadoSolicitud estadoSolicitud) {
+        this.estadoSolicitud = estadoSolicitud;
+    }
+
+
 }
