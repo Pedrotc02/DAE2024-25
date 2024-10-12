@@ -10,6 +10,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Socio {
 
@@ -31,6 +34,8 @@ public class Socio {
     @NotNull
     private EstadoCuota estadoCuota;
 
+    List<Solicitud> solicitudes;
+
     public Socio(String socioId, String nombre, String apellidos, String email, String tlf, String claveAcceso,
                  EstadoCuota estadoCuota) {
         this.socioId = socioId;
@@ -40,21 +45,34 @@ public class Socio {
         this.tlf = tlf;
         this.claveAcceso = claveAcceso;
         this.estadoCuota = estadoCuota;
+        this.solicitudes = new ArrayList<>();
     }
 
     public Solicitud solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
 
         actividad.asignarPlazas(numAcompanantes + 1);
 
-        return new Solicitud(this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
+        String solicitudId = this.socioId + "-" + System.currentTimeMillis();
+
+        return new Solicitud(solicitudId, this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
     }
 
-    public void modificarSolicitud(Solicitud solicitud) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void modificarSolicitud(String solicitudId, int numAcompanantes) {
+        for (int i = 0; i < solicitudes.size(); i++) {
+            solicitudes.get(i).setNumAcompanantes(numAcompanantes);
+        }
     }
 
-    public void borrarSolicitud(Solicitud solicitud) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void borrarSolicitud(String solicitudId) {
+        for (int i = solicitudes.size() -1; i >= 0; i--) {
+            if(solicitudes.get(i).getSolicitudId().equals(solicitudId)){
+                solicitudes.remove(i);
+            }
+        }
+    }
+
+    public void anadirSolicitud(Solicitud solicitud){
+        solicitudes.add(solicitud);
     }
 
     // Getters

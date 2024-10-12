@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 
 public class Solicitud {
     @NotBlank
+    private String solicitudId;
+    @NotBlank
     private String socioId;
     @NotNull
     private Socio socio;
@@ -13,7 +15,8 @@ public class Solicitud {
     @NotNull
     private EstadoSolicitud estadoSolicitud;
 
-    public Solicitud(String socioId, Socio socio, int numAcompanantes, EstadoSolicitud estadoSolicitud) {
+    public Solicitud(String solicitudId, String socioId, Socio socio, int numAcompanantes, EstadoSolicitud estadoSolicitud) {
+        this.solicitudId = solicitudId;
         this.socioId = socioId;
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
@@ -46,6 +49,10 @@ public class Solicitud {
         return socioId;
     }
 
+    public String getSolicitudId() {
+        return solicitudId;
+    }
+
     public Socio getSocio() {
         return socio;
     }
@@ -56,5 +63,11 @@ public class Solicitud {
 
     public EstadoSolicitud getEstadoSolicitud() {
         return estadoSolicitud;
+    }
+
+    //Setters
+
+    public void setNumAcompanantes(int numAcompanantes) {
+        this.numAcompanantes = numAcompanantes;
     }
 }
