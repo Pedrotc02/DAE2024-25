@@ -46,9 +46,7 @@ public class ServicioClub {
     }
 
     public void crearActividad(Socio dir, @Valid Actividad actividad) {
-        if (!dir.getNombre().equals("direccion")) {
-            throw new OperacionDeDireccion();
-        }
+        validarDireccion(dir);
 
         if(actividades.containsKey(actividad.getId())){
             throw new ActividadYaRegistrada();
@@ -57,81 +55,33 @@ public class ServicioClub {
         actividades.put(actividad.getId(), actividad);
     }
 
-    /**
-     * @param dir el objeto direccion
-     * @param actividadId id de la actividad de la que se quieren revisar las solicitudes
-     * @throws OperacionDeDireccion si quien intenta revisar solicitudes de una actividad no es la direccion del club
-     * @throws ActividadNoExistente si la actividad es inválida en el club
-     * @throws FechaFinInscripcionNoValida si a fecha actual, no ha terminado la inscripción en la actividad
-     * @return deuvelve todas las solicitudes de una actividad ordenadas por fecha de menor a mayor
-     */
     public List<Solicitud> revisarSolicitudes(Socio dir, String actividadId) {
-        if (!dir.getNombre().equals("direccion")) {
-            throw new OperacionDeDireccion();
-        }
-
-        if (!actividades.containsKey(actividadId)) {
-            throw new ActividadNoExistente();
-        }
-
-        LocalDate now = LocalDate.now();
-        if (actividades.get(actividadId).getFechaFinInscripcion().isBefore(now)) {
-            throw new FechaFinInscripcionNoValida();
-        }
-
-        UtilList.ordenarListaPorFecha(actividades.get(actividadId));
-        return actividades.get(actividadId).getSolicitudes();
+        validarDireccion(dir);
+        Actividad actividad = obtenerActividadPorId(actividadId);
+        return actividad.revisarSolicitudes();
     }
 
-
-    public void asignarPlazasFinInscripcion(Socio dir , String actividadId) {
-
-        if (!dir.getNombre().equals("direccion")) {
-            throw new OperacionDeDireccion();
-        }
-
-        Actividad actividad = actividades.get(actividadId);
-        List<Solicitud> solicitudes =  revisarSolicitudes(dir, actividadId);
-        for (Solicitud solicitud : solicitudes) {
-            //Se le da prioridad a las solicitudes de los socios que han pagado para intentar meter a los acompañantes
-            if(solicitud.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL)){
-
-                if(solicitud.getNumAcompanantes() <= actividad.getPlazasDisponibles()) {
-                    actividad.asignarPlazas(solicitud.getNumAcompanantes());
-                    solicitud.setEstadoSolicitud(EstadoSolicitud.CERRADA);
-                } else {
-                    for (int i = 0; i < solicitud.getNumAcompanantes(); i++) {
-                        if (!actividad.hayPlazas()) {
-                            throw new PlazasNoDisponibles("No quedan más plazas por asignar en esta actividad");
-                        }
-                        actividad.asignarPlazas(1);
-                    }
-                }
-            }
-        }
-
-        //Ahora se estudian las solicitudes de las personas que no han pagado la cuota
-        for (Solicitud solicitud : solicitudes){
-            if(solicitud.getEstadoSolicitud().equals(EstadoSolicitud.PENDIENTE)){
-
-                if(solicitud.getNumAcompanantes() + 1 <= actividad.getPlazasDisponibles()) {
-                    actividad.asignarPlazas(solicitud.getNumAcompanantes() + 1);
-                    solicitud.setEstadoSolicitud(EstadoSolicitud.CERRADA);
-                } else {
-                    for (int i = 0; i < solicitud.getNumAcompanantes() + 1; i++) {
-                        if (!actividad.hayPlazas()) {
-                            throw new PlazasNoDisponibles("No quedan más plazas por asignar en esta actividad");
-                        }
-                        actividad.asignarPlazas(1);
-                    }
-                }
-            }
-        }
+    public void asignarPlazasFinInscripcion(Socio dir, String actividadId) {
+        validarDireccion(dir);
+        Actividad actividad = obtenerActividadPorId(actividadId);
+        actividad.asignarPlazasFinInscripcion();
     }
 
     public void resetearEstadoCuota() {
-        for(Socio socio :  socios.values()){
-            socio.setEstadoCuota(EstadoCuota.PENDIENTE);
+        socios.values().forEach(socio -> socio.setEstadoCuota(EstadoCuota.PENDIENTE));
+    }
+
+    private Actividad obtenerActividadPorId(String actividadId) {
+        Actividad actividad = actividades.get(actividadId);
+        if (actividad == null) {
+            throw new ActividadNoExistente();
+        }
+        return actividad;
+    }
+
+    private void validarDireccion(Socio socio) {
+        if (!socio.getNombre().equals("direccion")) {
+            throw new OperacionDeDireccion();
         }
     }
 }

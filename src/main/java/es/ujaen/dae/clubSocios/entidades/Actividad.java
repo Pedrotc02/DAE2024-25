@@ -1,13 +1,16 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
+import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
+import es.ujaen.dae.clubSocios.excepciones.FechaFinInscripcionNoValida;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Actividad {
     @NotBlank
@@ -20,7 +23,6 @@ public class Actividad {
     private double precio;
     @PositiveOrZero
     private int plazasDisponibles;
-
     @Positive
     private int totalPlazas;
     @Future
@@ -61,6 +63,34 @@ public class Actividad {
 
     public void quitarSolicitud(Solicitud solicitud) {
         solicitudes.remove(solicitud);
+    }
+
+    public List<Solicitud> revisarSolicitudes() {
+        LocalDate now = LocalDate.now();
+        if (!fechaFinInscripcion.isBefore(now)) {
+            throw new FechaFinInscripcionNoValida();
+        }
+        return solicitudes.stream()
+                .sorted(Comparator.comparing(Solicitud::getFechaSolicitud))
+                .collect(Collectors.toList());
+    }
+
+    public void asignarPlazasFinInscripcion() {
+        // Se da prioridad a las solicitudes con estado parcial
+        for (Solicitud solicitud : solicitudes) {
+            if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlazas(solicitud.getNumAcompanantes())) {
+                asignarPlazas(solicitud.getNumAcompanantes());
+                solicitud.setEstadoSolicitud(EstadoSolicitud.CERRADA);
+            }
+        }
+
+        // Luego se procesan las solicitudes pendientes
+        for (Solicitud solicitud : solicitudes) {
+            if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PENDIENTE && hayPlazas(solicitud.getNumAcompanantes() + 1)) {
+                asignarPlazas(solicitud.getNumAcompanantes() + 1);
+                solicitud.setEstadoSolicitud(EstadoSolicitud.CERRADA);
+            }
+        }
     }
 
     public void asignarPlazas(int numPlazas) {
@@ -126,8 +156,8 @@ public class Actividad {
         return plazasDisponibles > 0;
     }
 
-    public boolean hayPlazas(int totalPlazas) {
-        return plazasDisponibles - totalPlazas > 0;
+    boolean hayPlazas(int numPlazasSolicitadas) {
+        return plazasDisponibles >= numPlazasSolicitadas;
     }
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {

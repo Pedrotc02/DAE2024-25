@@ -3,6 +3,7 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
+import es.ujaen.dae.clubSocios.excepciones.InscripcionFueraDePlazoException;
 import jakarta.validation.constraints.*;
 
 import jakarta.validation.constraints.Email;
@@ -48,26 +49,28 @@ public class Socio {
         this.solicitudes = new ArrayList<>();
     }
 
-    public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
-        int totalPlazas = 1 + numAcompanantes; // Socio + acompañantes
-        String solicitudId = this.socioId + "-" + System.currentTimeMillis();
-        EstadoSolicitud estado;
-
-        if (!actividad.hayPlazas(totalPlazas)) {
-            estado = EstadoSolicitud.CANCELADA;
-        } else if (this.getEstadoCuota().equals(EstadoCuota.PAGADA)) {
-            if (numAcompanantes > 0) {
-                estado = EstadoSolicitud.PARCIAL;
-            } else {
-                estado = EstadoSolicitud.CERRADA;
-                actividad.asignarPlazas(1);
-            }
-        } else {
-            estado = EstadoSolicitud.PENDIENTE;
+    public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) throws InscripcionFueraDePlazoException {
+        if (!actividad.estaEnPeriodoInscripcion()) {
+            throw new InscripcionFueraDePlazoException();
         }
-
-        Solicitud nuevaSolicitud = new Solicitud(solicitudId, this.socioId, this, numAcompanantes, estado);
+        int totalPlazas = 1 + numAcompanantes;
+        EstadoSolicitud estado = evaluarEstadoSolicitud(actividad, totalPlazas);
+        Solicitud nuevaSolicitud = new Solicitud(generarSolicitudId(), this.socioId, this, numAcompanantes, estado);
         solicitudes.add(nuevaSolicitud);
+        actividad.agregarSolicitud(nuevaSolicitud);
+    }
+
+    private EstadoSolicitud evaluarEstadoSolicitud(Actividad actividad, int totalPlazas) {
+        if (!actividad.hayPlazas(totalPlazas)) {
+            return EstadoSolicitud.CANCELADA;
+        } else if (estadoCuota.equals(EstadoCuota.PAGADA)) {
+            return totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
+        }
+        return EstadoSolicitud.PENDIENTE;
+    }
+
+    private String generarSolicitudId() {
+        return this.socioId + "-" + System.currentTimeMillis();
     }
 
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
@@ -77,14 +80,14 @@ public class Socio {
     }
 
     public void borrarSolicitud(String solicitudId) {
-        for (int i = solicitudes.size() -1; i >= 0; i--) {
-            if(solicitudes.get(i).getSolicitudId().equals(solicitudId)){
+        for (int i = solicitudes.size() - 1; i >= 0; i--) {
+            if (solicitudes.get(i).getSolicitudId().equals(solicitudId)) {
                 solicitudes.remove(i);
             }
         }
     }
 
-    public void anadirSolicitud(Solicitud solicitud){
+    public void anadirSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
     }
 
