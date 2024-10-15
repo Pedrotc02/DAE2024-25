@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -34,8 +35,7 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-
-    List<Solicitud> solicitudes;
+    List<Solicitud> solicitudes = new ArrayList<>();
 
     public Socio(String socioId, String nombre, String apellidos, String email, String tlf, String claveAcceso,
                  EstadoCuota estadoCuota) {
@@ -46,10 +46,9 @@ public class Socio {
         this.tlf = tlf;
         this.claveAcceso = claveAcceso;
         this.estadoCuota = estadoCuota;
-        this.solicitudes = new ArrayList<>();
     }
 
-    public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) throws InscripcionFueraDePlazoException {
+    public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
         if (!actividad.estaEnPeriodoInscripcion()) {
             throw new InscripcionFueraDePlazoException();
         }
@@ -62,8 +61,9 @@ public class Socio {
 
     private EstadoSolicitud evaluarEstadoSolicitud(Actividad actividad, int totalPlazas) {
         if (!actividad.hayPlazas(totalPlazas)) {
-            return EstadoSolicitud.CANCELADA;
-        } else if (estadoCuota.equals(EstadoCuota.PAGADA)) {
+            return EstadoSolicitud.CANCELADA; // No available spots
+        }
+        if (estadoCuota.equals(EstadoCuota.PAGADA)) {
             return totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
         }
         return EstadoSolicitud.PENDIENTE;
@@ -74,18 +74,37 @@ public class Socio {
     }
 
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
-        for (int i = 0; i < solicitudes.size(); i++) {
-            solicitudes.get(i).setNumAcompanantes(numAcompanantes);
+        boolean flag = false;
+        for (Solicitud solicitud : solicitudes) {
+            if (solicitud.getSolicitudId().equals(solicitudId)) {
+                solicitud.setNumAcompanantes(numAcompanantes);
+                flag = true;
+                break;
+            }
+        }
+
+        if (!flag) {
+            throw new IllegalArgumentException("No se encontró una solicitud con el ID proporcionado.");
         }
     }
 
     public void borrarSolicitud(String solicitudId) {
-        for (int i = solicitudes.size() - 1; i >= 0; i--) {
-            if (solicitudes.get(i).getSolicitudId().equals(solicitudId)) {
-                solicitudes.remove(i);
+        boolean flag = false;
+        Iterator<Solicitud> iterator = solicitudes.iterator();
+        while (iterator.hasNext()) {
+            Solicitud solicitud = iterator.next();
+            if (solicitud.getSolicitudId().equals(solicitudId)) {
+                iterator.remove();
+                flag = true;
+                break;
             }
         }
+
+        if (!flag) {
+            throw new IllegalArgumentException("No se encontró una solicitud con el ID proporcionado.");
+        }
     }
+
 
     public void anadirSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);

@@ -88,6 +88,4 @@ public class Solicitud {
     public void setEstadoSolicitud(EstadoSolicitud estadoSolicitud) {
         this.estadoSolicitud = estadoSolicitud;
     }
-
-
 }
