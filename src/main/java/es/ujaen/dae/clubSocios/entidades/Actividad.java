@@ -64,15 +64,10 @@ public class Actividad {
     }
 
     public void asignarPlazas(int numPlazas) {
-        if (plazasDisponibles == 0)
-            throw new PlazasNoDisponibles("No quedan plazas en la actividad: " + this.titulo);
-
         if (numPlazas > plazasDisponibles)
             throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo);
 
-        for (int i = 0; i < numPlazas; i++) {
-            plazasDisponibles--;
-        }
+        plazasDisponibles -= numPlazas;
     }
 
     public boolean estaEnPeriodoInscripcion() {
@@ -127,7 +122,14 @@ public class Actividad {
         return estado;
     }
 
-    public boolean hayPlazas() { return plazasDisponibles > 0;}
+    public boolean hayPlazas() {
+        return plazasDisponibles > 0;
+    }
+
+    public boolean hayPlazas(int totalPlazas) {
+        return plazasDisponibles - totalPlazas > 0;
+    }
+
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
     }
