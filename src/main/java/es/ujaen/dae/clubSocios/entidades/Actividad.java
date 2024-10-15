@@ -3,6 +3,7 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.FechaFinInscripcionNoValida;
+import es.ujaen.dae.clubSocios.excepciones.InscripcionFueraDePlazoException;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
@@ -59,14 +60,14 @@ public class Actividad {
 
     public void agregarSolicitud(Solicitud solicitud) {
         if (estado != EstadoActividad.ABIERTA) {
-            throw new IllegalStateException("No se pueden agregar solicitudes cuando la actividad no está abierta.");
+            throw new InscripcionFueraDePlazoException("No se pueden agregar solicitudes cuando la actividad no está abierta.");
         }
         solicitudes.add(solicitud);
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
         if (estado != EstadoActividad.ABIERTA) {
-            throw new IllegalStateException("No se pueden quitar solicitudes cuando la actividad no está abierta.");
+            throw new InscripcionFueraDePlazoException("No se pueden quitar solicitudes cuando la actividad no está abierta.");
         }
         solicitudes.remove(solicitud);
     }
@@ -106,6 +107,8 @@ public class Actividad {
         if (numPlazas > plazasDisponibles)
             throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo);
 
+
+
         plazasDisponibles -= numPlazas;
     }
 
@@ -123,46 +126,8 @@ public class Actividad {
         return id;
     }
 
-    public @NotBlank String getTitulo() {
-        return titulo;
-    }
-
-    public @NotBlank String getDescripcion() {
-        return descripcion;
-    }
-
-    @Positive
-    public double getPrecio() {
-        return precio;
-    }
-
-    @PositiveOrZero
-    public int getPlazasDisponibles() {
-        return plazasDisponibles;
-    }
-
-    public @Future LocalDate getFechaCelebracion() {
-        return fechaCelebracion;
-    }
-
-    public @FutureOrPresent LocalDate getFechaInicioInscripcion() {
-        return fechaInicioInscripcion;
-    }
-
-    public @Future LocalDate getFechaFinInscripcion() {
-        return fechaFinInscripcion;
-    }
-
     public List<Solicitud> getSolicitudes() {
         return solicitudes;
-    }
-
-    public EstadoActividad getEstado() {
-        return estado;
-    }
-
-    public boolean hayPlazas() {
-        return plazasDisponibles > 0;
     }
 
     boolean hayPlazas(int numPlazasSolicitadas) {
