@@ -20,8 +20,12 @@ public class Solicitud {
     @Past
     private LocalDate fechaSolicitud;
 
-    public Solicitud(String solicitudId, String socioId, Socio socio, int numAcompanantes, EstadoSolicitud estadoSolicitud) {
-        this.solicitudId = solicitudId;
+    private String generarSolicitudId() {
+        return this.socioId + "-" + System.currentTimeMillis();
+    }
+
+    public Solicitud(String socioId, Socio socio, int numAcompanantes, EstadoSolicitud estadoSolicitud) {
+        this.solicitudId = generarSolicitudId();
         this.socioId = socioId;
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;

@@ -50,11 +50,11 @@ public class Socio {
 
     public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
         if (!actividad.estaEnPeriodoInscripcion()) {
-            throw new InscripcionFueraDePlazoException();
+            throw new InscripcionFueraDePlazoException("Inscripción fuera de plazo ");
         }
         int totalPlazas = 1 + numAcompanantes;
         EstadoSolicitud estado = evaluarEstadoSolicitud(actividad, totalPlazas);
-        Solicitud nuevaSolicitud = new Solicitud(generarSolicitudId(), this.socioId, this, numAcompanantes, estado);
+        Solicitud nuevaSolicitud = new Solicitud(this.socioId, this, numAcompanantes, estado);
         solicitudes.add(nuevaSolicitud);
         actividad.agregarSolicitud(nuevaSolicitud);
     }
