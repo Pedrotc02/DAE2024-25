@@ -58,16 +58,23 @@ public class Actividad {
     }
 
     public void agregarSolicitud(Solicitud solicitud) {
+        if (estado != EstadoActividad.ABIERTA) {
+            throw new IllegalStateException("No se pueden agregar solicitudes cuando la actividad no está abierta.");
+        }
         solicitudes.add(solicitud);
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
+        if (estado != EstadoActividad.ABIERTA) {
+            throw new IllegalStateException("No se pueden quitar solicitudes cuando la actividad no está abierta.");
+        }
         solicitudes.remove(solicitud);
     }
 
+
     public List<Solicitud> revisarSolicitudes() {
         LocalDate now = LocalDate.now();
-        if (!fechaFinInscripcion.isBefore(now)) {
+        if (now.isBefore(fechaFinInscripcion)) {
             throw new FechaFinInscripcionNoValida();
         }
         return solicitudes.stream()
@@ -75,16 +82,17 @@ public class Actividad {
                 .collect(Collectors.toList());
     }
 
+
     public void asignarPlazasFinInscripcion() {
-        // Se da prioridad a las solicitudes con estado parcial
+        // Primera vuelta para parciales
         for (Solicitud solicitud : solicitudes) {
-            if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlazas(solicitud.getNumAcompanantes())) {
-                asignarPlazas(solicitud.getNumAcompanantes());
+            if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlazas(solicitud.getNumAcompanantes() + 1)) {
+                asignarPlazas(solicitud.getNumAcompanantes() + 1);
                 solicitud.setEstadoSolicitud(EstadoSolicitud.CERRADA);
             }
         }
 
-        // Luego se procesan las solicitudes pendientes
+        // Segunda vuelta para el resto
         for (Solicitud solicitud : solicitudes) {
             if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PENDIENTE && hayPlazas(solicitud.getNumAcompanantes() + 1)) {
                 asignarPlazas(solicitud.getNumAcompanantes() + 1);
@@ -92,6 +100,7 @@ public class Actividad {
             }
         }
     }
+
 
     public void asignarPlazas(int numPlazas) {
         if (numPlazas > plazasDisponibles)
