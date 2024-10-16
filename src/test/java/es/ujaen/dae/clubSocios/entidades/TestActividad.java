@@ -3,7 +3,7 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
-import es.ujaen.dae.clubSocios.excepciones.InscripcionFueraDePlazoException;
+import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -88,7 +88,7 @@ public class TestActividad {
 
         // Verificar que se lanza la excepción adecuada
         var exception = assertThrows(
-                InscripcionFueraDePlazoException.class,
+                FueraDePlazo.class,
                 () -> actividad.agregarSolicitud(solicitud)
         );
 
