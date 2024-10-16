@@ -34,24 +34,10 @@ public class Solicitud {
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
-        if (nuevoNumAcompanantes < 0 || nuevoNumAcompanantes > 5)
+        if (nuevoNumAcompanantes < 0 || nuevoNumAcompanantes >= 5)
             throw new IllegalArgumentException("El número de acompañantes debe ser mayor que 0 y menor que 5");
 
         this.numAcompanantes = nuevoNumAcompanantes;
-    }
-
-    public void eliminarAcompanante() {
-        if (numAcompanantes > 0) {
-            numAcompanantes--;
-        }
-    }
-
-    public void cancelar() {
-        this.estadoSolicitud = EstadoSolicitud.CANCELADA;
-    }
-
-    public boolean estaCompleta() {
-        return this.estadoSolicitud == EstadoSolicitud.CERRADA;
     }
 
     // Getters
@@ -81,12 +67,6 @@ public class Solicitud {
 
     public EstadoSolicitud getEstadoSolicitud() {
         return estadoSolicitud;
-    }
-
-    //Setters
-
-    public void setNumAcompanantes(int numAcompanantes) {
-        this.numAcompanantes = numAcompanantes;
     }
 
     public void setEstadoSolicitud(EstadoSolicitud estadoSolicitud) {

@@ -3,6 +3,7 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
+import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.InscripcionFueraDePlazoException;
 import jakarta.validation.constraints.*;
 
@@ -52,6 +53,12 @@ public class Socio {
         if (!actividad.estaEnPeriodoInscripcion()) {
             throw new InscripcionFueraDePlazoException("Inscripción fuera de plazo ");
         }
+        //Si el socio ya ha hecho una solicitud en la actividad dada
+        for (var solicitud: actividad.getSolicitudes()) {
+            if (solicitud.getSocioId().equals(this.socioId))
+                throw new ActividadYaRegistrada();
+        }
+
         int totalPlazas = 1 + numAcompanantes;
         EstadoSolicitud estado = evaluarEstadoSolicitud(actividad, totalPlazas);
         Solicitud nuevaSolicitud = new Solicitud(this.socioId, this, numAcompanantes, estado);
@@ -61,7 +68,7 @@ public class Socio {
 
     private EstadoSolicitud evaluarEstadoSolicitud(Actividad actividad, int totalPlazas) {
         if (!actividad.hayPlazas(totalPlazas)) {
-            return EstadoSolicitud.CANCELADA; // No available spots
+            return EstadoSolicitud.EN_ESPERA; // No available spots
         }
         if (estadoCuota.equals(EstadoCuota.PAGADA)) {
             return totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
@@ -69,15 +76,11 @@ public class Socio {
         return EstadoSolicitud.PENDIENTE;
     }
 
-    private String generarSolicitudId() {
-        return this.socioId + "-" + System.currentTimeMillis();
-    }
-
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
         boolean flag = false;
         for (Solicitud solicitud : solicitudes) {
             if (solicitud.getSolicitudId().equals(solicitudId)) {
-                solicitud.setNumAcompanantes(numAcompanantes);
+                solicitud.modificarNumAcompanantes(numAcompanantes);
                 flag = true;
                 break;
             }
@@ -140,8 +143,8 @@ public class Socio {
     }
 
     // Setters
-
     public void setEstadoCuota(EstadoCuota estadoCuota) {
         this.estadoCuota = estadoCuota;
     }
+
 }
