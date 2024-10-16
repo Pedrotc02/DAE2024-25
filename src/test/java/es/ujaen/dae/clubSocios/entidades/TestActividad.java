@@ -72,7 +72,7 @@ public class TestActividad {
     @DirtiesContext
     void testAgregarSolicitudCuandoLaActividadEstaAbierta() {
         var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
-        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         Solicitud solicitud = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
         assertDoesNotThrow(() -> actividad.agregarSolicitud(solicitud));
         assertEquals("La solicitud se ha tenido que agregar a la actividad", 1, actividad.getSolicitudes().size());
@@ -82,7 +82,7 @@ public class TestActividad {
     @DirtiesContext
     void testAgregarSolicitudCuandoLaActividadNoEstaAbierta() {
         var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
-        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         Solicitud solicitud = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
         actividad.setEstado(EstadoActividad.CERRADA);
 
@@ -98,7 +98,7 @@ public class TestActividad {
     @DirtiesContext
     void testRevisarSolicitudes() {
         var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
-        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         Solicitud solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
         Solicitud solicitud2 = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
 
@@ -113,64 +113,38 @@ public class TestActividad {
         assertEquals("solicitud2 debería ser la segunda", solicitudesRevisadas.get(1), solicitud2);
     }
 
-//    @Test
-//    @DirtiesContext
-//    void testAsignarPlazasFinInscripcion(){
-//        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
-//        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
-//        var socio2 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
-//
-//        // Escenario 1: Hay plazas disponibles y solicitudes parciales
-//        actividad.setPlazasDisponibles(5); // 5 plazas disponibles
-//
-//        Solicitud solicitud1 = new Solicitud(EstadoSolicitud.PARCIAL, 1); // 1 acompañante
-//        Solicitud solicitud2 = new Solicitud(EstadoSolicitud.PARCIAL, 2); // 2 acompañantes
-//        Solicitud solicitud3 = new Solicitud(EstadoSolicitud.PARCIAL, 3); // 3 acompañantes
-//
-//        actividad.agregarSolicitud(solicitud1);
-//        actividad.agregarSolicitud(solicitud2);
-//        actividad.agregarSolicitud(solicitud3);
-//
-//        // Ejecutar la asignación de plazas
-//        actividad.asignarPlazasFinInscripcion();
-//
-//        // Verificar el estado de las solicitudes y plazas restantes
-//        assertEquals(EstadoSolicitud.CERRADA, solicitud1.getEstadoSolicitud()); // Asignada
-//        assertEquals(EstadoSolicitud.CERRADA, solicitud2.getEstadoSolicitud()); // Asignada
-//        assertEquals(EstadoSolicitud.PARCIAL, solicitud3.getEstadoSolicitud()); // No asignada
-//        assertEquals(2, actividad.getPlazasDisponibles()); // Quedan 2 plazas
-//
-//        // Escenario 2: Ahora agregamos solicitudes en estado PENDIENTE
-//        Solicitud solicitud4 = new Solicitud(EstadoSolicitud.PENDIENTE, 1); // 1 acompañante
-//        Solicitud solicitud5 = new Solicitud(EstadoSolicitud.PENDIENTE, 2); // 2 acompañantes
-//
-//        actividad.agregarSolicitud(solicitud4);
-//        actividad.agregarSolicitud(solicitud5);
-//
-//        // Ejecutar la asignación de plazas de nuevo
-//        actividad.asignarPlazasFinInscripcion();
-//
-//        // Verificar el estado de las nuevas solicitudes y plazas restantes
-//        assertEquals(EstadoSolicitud.CERRADA, solicitud4.getEstadoSolicitud()); // Asignada
-//        assertEquals(EstadoSolicitud.PENDIENTE, solicitud5.getEstadoSolicitud()); // No asignada
-//        assertEquals(0, actividad.getPlazasDisponibles()); // Quedan 0 plazas
-//
-//        // Escenario 3: No hay plazas disponibles
-//        actividad.setPlazasDisponibles(0); // Cambiar a 0 plazas disponibles
-//
-//        Solicitud solicitud6 = new Solicitud(EstadoSolicitud.PARCIAL, 1); // 1 acompañante
-//        Solicitud solicitud7 = new Solicitud(EstadoSolicitud.PENDIENTE, 2); // 2 acompañantes
-//
-//        actividad.agregarSolicitud(solicitud6);
-//        actividad.agregarSolicitud(solicitud7);
-//
-//        // Ejecutar la asignación de plazas de nuevo
-//        actividad.asignarPlazasFinInscripcion();
-//
-//        // Verificar que no se han cerrado las solicitudes
-//        assertEquals(EstadoSolicitud.PARCIAL, solicitud6.getEstadoSolicitud()); // No asignada
-//        assertEquals(EstadoSolicitud.PENDIENTE, solicitud7.getEstadoSolicitud()); // No asignada
-//    }
+    @Test
+    @DirtiesContext
+    void testAsignarPlazasFinInscripcion(){
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 6, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
+
+        // Escenario 1: Hay plazas disponibles y solicitudes parciales
+
+        Solicitud solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 4, EstadoSolicitud.PARCIAL);
+        Solicitud solicitud2 = new Solicitud(socio2.getSocioId(), socio2, 3, EstadoSolicitud.PARCIAL);
+
+        actividad.agregarSolicitud(solicitud1);
+        actividad.agregarSolicitud(solicitud2);
+
+        actividad.asignarPlazasFinInscripcion();
+
+        // Verificar el estado de las solicitudes y plazas restantes
+        assertEquals("La solicitud debe estar cerrada", EstadoSolicitud.CERRADA, solicitud1.getEstadoSolicitud()); // Asignada
+        assertEquals("La solicitud no se ha podido cerrar, se queda en parcial", EstadoSolicitud.PARCIAL, solicitud2.getEstadoSolicitud()); // No Asignada
+        assertEquals("Debe quedar 1 plaza",1, actividad.getPlazasDisponibles()); // Quedan 1 plaza
+
+        // Escenario 2: Ahora agregamos solicitudes en estado PENDIENTE
+        Solicitud solicitud3 = new Solicitud(socio1.getSocioId(), socio1, 0, EstadoSolicitud.PENDIENTE);
+
+        actividad.agregarSolicitud(solicitud3);
+
+        actividad.asignarPlazasFinInscripcion();
+
+        assertEquals("Se debe cerrar la solicitud", EstadoSolicitud.CERRADA, solicitud3.getEstadoSolicitud()); // Asignada
+        assertEquals("No quedan mas plazas", 0, actividad.getPlazasDisponibles()); // Quedan 0 plazas
+    }
 
     @Test
     @DirtiesContext

@@ -47,7 +47,7 @@ public class TestSocio {
     @Test
     @DirtiesContext
     void testEliminarSolicitud(){
-        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com", "645367898", "pepfer", EstadoCuota.PENDIENTE);
+        var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
         var solicitud1 = new Solicitud( socio1.getSocioId(), socio1, 4, EstadoSolicitud.PENDIENTE);
         var solicitud2 = new Solicitud( socio1.getSocioId(), socio1, 4, EstadoSolicitud.PENDIENTE);
 

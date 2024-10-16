@@ -21,7 +21,7 @@ public class ServicioClub {
     Map<String, Socio> socios;
     Map<String, Actividad> actividades;
 
-    private static final Socio direccion = new Socio("99999999Z", "direccion", "-", "direccion@clubsocios.es","953897654", "serviceSecret", EstadoCuota.PAGADA);
+    private static final Socio direccion = new Socio("direccion@clubsocios.es", "direccion", "-", "99999999Z","953897654", "serviceSecret", EstadoCuota.PAGADA);
 
     public ServicioClub() {
         this.socios = new TreeMap<>();

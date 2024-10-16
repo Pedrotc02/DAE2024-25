@@ -37,8 +37,8 @@ public class TestServicioClub {
     void testOperacionDireccion() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
-        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
-        var socio2 = new Socio("22222222M", "Edu", "Apellido1 Apellido2", "edu@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio2 = new Socio("edu@gmail.com", "Edu", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
 
         assertThatThrownBy(() -> servicio.crearSocio(socio1, socio2)).isInstanceOf(OperacionDeDireccion.class);
 
@@ -54,12 +54,12 @@ public class TestServicioClub {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
         //Email incorrecto,dni incorrecto
-        var socio = new Socio("11111111", "Pedro", "Apellido1 Apellido2", "pruebagmail.com", "123456789", "contraseña", EstadoCuota.PAGADA);
+        var socio = new Socio("pruebagmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "123456789", "contraseña", EstadoCuota.PAGADA);
 
         assertThatThrownBy(() -> servicio.crearSocio(direccion, socio)).isInstanceOf(ConstraintViolationException.class);
 
         //Socio repetido
-        var socio2 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio2 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         servicio.crearSocio(direccion, socio2);
         assertThatThrownBy(() -> servicio.crearSocio(direccion, socio2)).isInstanceOf(SocioYaRegistrado.class);
 
@@ -70,7 +70,7 @@ public class TestServicioClub {
     void testLoginSocio() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
-        var socio = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
         servicio.crearSocio(direccion, socio);
 
@@ -87,7 +87,7 @@ public class TestServicioClub {
     void testActualizaEstado() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
-        var socio = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PENDIENTE);
+        var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(direccion, socio);
 
         servicio.actualizarEstadoCuota(socio.getSocioId(), EstadoCuota.PAGADA);
@@ -105,7 +105,7 @@ public class TestServicioClub {
         assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad)).isInstanceOf(ConstraintViolationException.class);
 
         //Actividad repetida
-        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,10,13), LocalDate.of(2024,10,13), LocalDate.of(2024,10,15));
+        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,11,2), LocalDate.of(2024,10,20), LocalDate.of(2024,10,30));
         servicio.crearActividad(direccion, actividad2);
         assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad2)).isInstanceOf(ActividadYaRegistrada.class);
 
@@ -116,8 +116,8 @@ public class TestServicioClub {
     void testResetearEstadoCuota(){
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
-        var socio1 = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
-        var socio2 = new Socio("22222222M", "Edu", "Apellido1 Apellido2", "edu@gmail.com", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio2 = new Socio("edu@gmail.com", "Edu", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
 
         servicio.crearSocio(direccion, socio1);
         servicio.crearSocio(direccion, socio2);
