@@ -128,31 +128,6 @@ public class TestServicioClub {
         assertEquals("El estado debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2.getEstadoCuota());
 
     }
-
-//    @Test
-//    @DirtiesContext
-//    void testRevisarSolicitudes(){
-//        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-//
-//        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,11,1), LocalDate.of(2024,10,20), LocalDate.of(2024,10,30));
-//
-//        servicio.crearActividad(direccion, actividad);
-//        List<Solicitud> solicitudesRevisadas = servicio.revisarSolicitudes(direccion, actividad.getId());
-//
-//        assertNotNull("Las solicitudesRevisadas no deberian ser nulas", solicitudesRevisadas);
-//
-//    }
-
-//    @Test
-//    @DirtiesContext
-//    void testAsignarPlazasFinInscripcion(){
-//        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-//
-//        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,11,1), LocalDate.of(2024,10,20), LocalDate.of(2024,10,30));
-//
-//        servicio.crearActividad(direccion, actividad);
-//    }
-
-
+    
 }
 
