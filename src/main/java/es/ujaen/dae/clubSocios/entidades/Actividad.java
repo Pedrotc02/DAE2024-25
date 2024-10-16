@@ -89,8 +89,6 @@ public class Actividad {
         if (LocalDate.now().isBefore(fechaFinInscripcion))
             throw new FueraDePlazo("La fecha de inscripción no ha finalizado");
 
-        UtilList.ordenarListaPorFecha(this);
-
         // Primera vuelta para parciales
         for (Solicitud solicitud : solicitudes) {
             if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlazas(solicitud.getNumAcompanantes() + 1)) {
