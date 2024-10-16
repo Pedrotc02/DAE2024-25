@@ -5,6 +5,7 @@ import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.ActividadNoExistente;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.OperacionDeDireccion;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
+import static org.springframework.test.util.AssertionErrors.assertNotNull;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class)
 public class TestServicioClub {
@@ -77,7 +79,7 @@ public class TestServicioClub {
 
         assertThat(servicio.login("error@gmail.com", "prueba")).isEmpty();
         assertThat(servicio.login("prueba@gmail.com", "claveError")).isEmpty();
-        assertThat(servicio.login("prueba@gmail.com", "123456")).hasValueSatisfying(s -> s.getEmail().equals(socio.getEmail()));
+        assertThat(servicio.login("prueba@gmail.com", "123456")).hasValueSatisfying(s -> s.getSocioId().equals(socio.getSocioId()));
     }
 
     @Test
@@ -88,7 +90,7 @@ public class TestServicioClub {
         var socio = new Socio("11111111M", "Pedro", "Apellido1 Apellido2", "prueba@gmail.com", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(direccion, socio);
 
-        servicio.actualizarEstadoCuota(socio.getEmail(), EstadoCuota.PAGADA);
+        servicio.actualizarEstadoCuota(socio.getSocioId(), EstadoCuota.PAGADA);
         assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
     }
 
@@ -126,6 +128,30 @@ public class TestServicioClub {
         assertEquals("El estado debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2.getEstadoCuota());
 
     }
+
+//    @Test
+//    @DirtiesContext
+//    void testRevisarSolicitudes(){
+//        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+//
+//        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,11,1), LocalDate.of(2024,10,20), LocalDate.of(2024,10,30));
+//
+//        servicio.crearActividad(direccion, actividad);
+//        List<Solicitud> solicitudesRevisadas = servicio.revisarSolicitudes(direccion, actividad.getId());
+//
+//        assertNotNull("Las solicitudesRevisadas no deberian ser nulas", solicitudesRevisadas);
+//
+//    }
+
+//    @Test
+//    @DirtiesContext
+//    void testAsignarPlazasFinInscripcion(){
+//        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+//
+//        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,11,1), LocalDate.of(2024,10,20), LocalDate.of(2024,10,30));
+//
+//        servicio.crearActividad(direccion, actividad);
+//    }
 
 
 }

@@ -65,13 +65,6 @@ public class Actividad {
         solicitudes.add(solicitud);
     }
 
-    public void quitarSolicitud(Solicitud solicitud) {
-        if (estado != EstadoActividad.ABIERTA) {
-            throw new InscripcionFueraDePlazoException("No se pueden quitar solicitudes cuando la actividad no está abierta.");
-        }
-        solicitudes.remove(solicitud);
-    }
-
 
     public List<Solicitud> revisarSolicitudes() {
         LocalDate now = LocalDate.now();
@@ -107,8 +100,6 @@ public class Actividad {
         if (numPlazas > plazasDisponibles)
             throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo);
 
-
-
         plazasDisponibles -= numPlazas;
     }
 
@@ -126,6 +117,10 @@ public class Actividad {
         return id;
     }
 
+    public int getPlazasDisponibles() {
+        return plazasDisponibles;
+    }
+
     public List<Solicitud> getSolicitudes() {
         return solicitudes;
     }
@@ -136,6 +131,10 @@ public class Actividad {
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
+    }
+
+    public void setEstado(EstadoActividad estado) {
+        this.estado = estado;
     }
 }
 
