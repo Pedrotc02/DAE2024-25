@@ -28,7 +28,8 @@ public class ServicioClub {
         this.actividades = new TreeMap<>();
     }
 
-    public void crearSocio(@Valid Socio socio) {
+    public void crearSocio(Socio dir, @Valid Socio socio) {
+        validarDireccion(dir);
         if(socios.containsKey(socio.getEmail())){
             throw new SocioYaRegistrado();
         }
@@ -37,9 +38,14 @@ public class ServicioClub {
     }
 
     public Optional<Socio> login(@Email String email, String clave){
+
+        if (direccion.getEmail().equals(email) && direccion.getClaveAcceso().equals(clave))
+            return Optional.of(direccion);
+
         Socio socio = socios.get(email);
         return (socio != null && socio.getClaveAcceso().equals(clave)) ? Optional.of(socio): Optional.empty();
     }
+
 
     public void actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
         socios.get(email).setEstadoCuota(estadoCuota);
@@ -55,11 +61,13 @@ public class ServicioClub {
         actividades.put(actividad.getId(), actividad);
     }
 
+
     public List<Solicitud> revisarSolicitudes(Socio dir, String actividadId) {
         validarDireccion(dir);
         Actividad actividad = obtenerActividadPorId(actividadId);
         return actividad.revisarSolicitudes();
     }
+
 
     public void asignarPlazasFinInscripcion(Socio dir, String actividadId) {
         validarDireccion(dir);
@@ -67,10 +75,12 @@ public class ServicioClub {
         actividad.asignarPlazasFinInscripcion();
     }
 
+
     public void resetearEstadoCuota() {
         socios.values().forEach(socio -> socio.setEstadoCuota(EstadoCuota.PENDIENTE));
     }
 
+    
     private Actividad obtenerActividadPorId(String actividadId) {
         Actividad actividad = actividades.get(actividadId);
         if (actividad == null) {
