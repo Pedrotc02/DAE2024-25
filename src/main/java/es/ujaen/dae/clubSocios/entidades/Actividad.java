@@ -5,7 +5,6 @@ import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

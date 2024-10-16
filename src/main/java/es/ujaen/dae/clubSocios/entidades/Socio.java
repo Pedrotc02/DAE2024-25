@@ -14,14 +14,15 @@ import jakarta.validation.constraints.Pattern;
 public class Socio {
 
     @NotBlank
-    @Pattern(regexp = "^\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]$", message = "DNI no válido")
-    private String socioId;
+    @Email
+    private String id; // email
     @NotBlank
     private String nombre;
     @NotBlank
     private String apellidos;
-    @Email
-    private String email;
+    @NotBlank
+    @Pattern(regexp = "^\\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]$", message = "DNI no válido")
+    private String dni;
     @NotBlank
     @Pattern(regexp = "^(\\+34|0034|34)?[6789]\\d{8}$", message = "No es un número de teléfono válido")
     private String tlf;
@@ -31,22 +32,20 @@ public class Socio {
     @NotNull
     private EstadoCuota estadoCuota;
 
-    public Socio(String socioId, String nombre, String apellidos, String email, String tlf, String claveAcceso,
+    public Socio(String email, String nombre, String apellidos, String dni, String tlf, String claveAcceso,
                  EstadoCuota estadoCuota) {
-        this.socioId = socioId;
+        this.id = email;
         this.nombre = nombre;
         this.apellidos = apellidos;
-        this.email = email;
+        this.dni = dni;
         this.tlf = tlf;
         this.claveAcceso = claveAcceso;
         this.estadoCuota = estadoCuota;
     }
 
     public Solicitud solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
-
         actividad.asignarPlazas(numAcompanantes + 1);
-
-        return new Solicitud(this.socioId, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
+        return new Solicitud(this.id, this, numAcompanantes, EstadoSolicitud.PENDIENTE);
     }
 
     public void modificarSolicitud(Solicitud solicitud) {
@@ -58,8 +57,8 @@ public class Socio {
     }
 
     // Getters
-    public String getSocioId() {
-        return socioId;
+    public String getId() {
+        return id;
     }
 
     public String getNombre() {
@@ -71,7 +70,11 @@ public class Socio {
     }
 
     public String getEmail() {
-        return email;
+        return id;
+    } // redundante
+
+    public String getDni() {
+        return dni;
     }
 
     public String getTlf() {

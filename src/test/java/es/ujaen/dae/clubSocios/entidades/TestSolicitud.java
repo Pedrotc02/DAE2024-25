@@ -17,15 +17,15 @@ public class TestSolicitud {
     @Test
     @DirtiesContext
     void testValidacionSolicitud() {
-        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com", "653398283", "pepifer", EstadoCuota.PENDIENTE);
-        var solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 4, EstadoSolicitud.PENDIENTE);
+        var socio1 = new Socio("pepfer@gamil.com", "Pepito", "Fernández", "12345678A", "653398283", "pepifer", EstadoCuota.PENDIENTE);
+        var solicitud1 = new Solicitud(socio1.getId(), socio1, 4, EstadoSolicitud.PENDIENTE);
 
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<Solicitud>> violations = validator.validate(solicitud1);
 
         assertThat(violations).isEmpty();
 
-        var solicitud2 = new Solicitud(socio1.getSocioId(), socio1, 6, EstadoSolicitud.PENDIENTE);
+        var solicitud2 = new Solicitud(socio1.getId(), socio1, 6, EstadoSolicitud.PENDIENTE);
 
         violations = validator.validate(solicitud2);
 

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 
 public class Solicitud {
     @NotBlank
+    @Email
     private String socioId;
     @NotNull
     private Socio socio;
