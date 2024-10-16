@@ -27,7 +27,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testValidacionActividad() {
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<Actividad>> violations = validator.validate(actividad1);
@@ -44,13 +44,13 @@ public class TestActividad {
     @DirtiesContext
     void testPlazasValidas() {
 
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
         assertThatThrownBy( () -> {
             actividad1.asignarPlazas(5);
         }).isInstanceOf(PlazasNoDisponibles.class);
 
-        var actividad2 = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad2 = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
         assertDoesNotThrow( () -> {
             actividad2.asignarPlazas(5);
         });
@@ -59,7 +59,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testFechasValidas() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
 
         assertThat(actividad.estaEnPeriodoInscripcion()).isTrue();
     }
@@ -67,7 +67,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testAgregarSolicitudCuandoLaActividadEstaAbierta() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         Solicitud solicitud = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
         assertDoesNotThrow(() -> actividad.agregarSolicitud(solicitud));
@@ -77,7 +77,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testAgregarSolicitudCuandoLaActividadNoEstaAbierta() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         Solicitud solicitud = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
         actividad.setEstado(EstadoActividad.CERRADA);
@@ -93,7 +93,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testRevisarSolicitudes() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         Solicitud solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
         Solicitud solicitud2 = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
@@ -145,7 +145,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testAsignarPlazas() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
         actividad.asignarPlazas(3);
 
@@ -155,7 +155,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testAsignarPlazasError() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4,LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
         PlazasNoDisponibles exception = assertThrows(PlazasNoDisponibles.class, () -> {
             actividad.asignarPlazas(5);
@@ -165,7 +165,7 @@ public class TestActividad {
     @Test
     @DirtiesContext
     void testEstaEnPeriodoInscripcion() {
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"));
+        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-31"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"));
         var actividad2 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-14"));
 
         boolean resultado1 = actividad1.estaEnPeriodoInscripcion();

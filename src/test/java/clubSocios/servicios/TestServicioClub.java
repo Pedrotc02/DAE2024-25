@@ -42,7 +42,7 @@ public class TestServicioClub {
 
         assertThatThrownBy(() -> servicio.crearSocio(socio1, socio2)).isInstanceOf(OperacionDeDireccion.class);
 
-        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,10,18), LocalDate.of(2024,10,16), LocalDate.of(2024,10,17));
+        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
         assertThatThrownBy(() -> servicio.crearActividad(socio1, actividad)).isInstanceOf(OperacionDeDireccion.class);
 
@@ -105,7 +105,7 @@ public class TestServicioClub {
         assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad)).isInstanceOf(ConstraintViolationException.class);
 
         //Actividad repetida
-        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.of(2024,11,2), LocalDate.of(2024,10,20), LocalDate.of(2024,10,30));
+        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
         servicio.crearActividad(direccion, actividad2);
         assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad2)).isInstanceOf(ActividadYaRegistrada.class);
 
@@ -128,6 +128,5 @@ public class TestServicioClub {
         assertEquals("El estado debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2.getEstadoCuota());
 
     }
-    
 }
 
