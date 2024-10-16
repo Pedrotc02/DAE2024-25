@@ -74,7 +74,6 @@ public class Actividad {
         solicitudes.remove(solicitud);
     }
 
-
     public List<Solicitud> revisarSolicitudes() {
         LocalDate now = LocalDate.now();
         if (now.isBefore(fechaFinInscripcion)) {
@@ -122,13 +121,16 @@ public class Actividad {
     }
 
     public void cambiarEstado() {
-        estado = LocalDate.now().isBefore(fechaInicioInscripcion) ? EstadoActividad.CERRADA :
-                LocalDate.now().isAfter(fechaFinInscripcion) ? EstadoActividad.FINALIZADA : EstadoActividad.ABIERTA;
+        estado = estaEnPeriodoInscripcion() ? EstadoActividad.ABIERTA : EstadoActividad.CERRADA;
     }
 
     // Getters
     public String getId() {
         return id;
+    }
+
+    public int getPlazasDisponibles() {
+        return plazasDisponibles;
     }
 
     public List<Solicitud> getSolicitudes() {
@@ -141,6 +143,10 @@ public class Actividad {
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
+    }
+
+    public void setEstado(EstadoActividad estado) {
+        this.estado = estado;
     }
 }
 

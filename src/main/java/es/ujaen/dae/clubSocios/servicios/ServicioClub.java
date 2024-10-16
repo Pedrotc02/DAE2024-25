@@ -21,7 +21,7 @@ public class ServicioClub {
     Map<String, Socio> socios;
     Map<String, Actividad> actividades;
 
-    private static final Socio direccion = new Socio("99999999Z", "direccion", "-", "direccion@clubsocios.es","953897654", "serviceSecret", EstadoCuota.PAGADA);
+    private static final Socio direccion = new Socio("direccion@clubsocios.es", "direccion", "-", "99999999Z","953897654", "serviceSecret", EstadoCuota.PAGADA);
 
     public ServicioClub() {
         this.socios = new TreeMap<>();
@@ -30,16 +30,16 @@ public class ServicioClub {
 
     public void crearSocio(Socio dir, @Valid Socio socio) {
         validarDireccion(dir);
-        if(socios.containsKey(socio.getEmail())){
+        if(socios.containsKey(socio.getSocioId())){
             throw new SocioYaRegistrado();
         }
         
-        socios.put(socio.getEmail(), socio);
+        socios.put(socio.getSocioId(), socio);
     }
 
     public Optional<Socio> login(@Email String email, String clave){
 
-        if (direccion.getEmail().equals(email) && direccion.getClaveAcceso().equals(clave))
+        if (direccion.getSocioId().equals(email) && direccion.getClaveAcceso().equals(clave))
             return Optional.of(direccion);
 
         Socio socio = socios.get(email);
