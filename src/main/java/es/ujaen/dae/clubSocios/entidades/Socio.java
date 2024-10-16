@@ -4,7 +4,7 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
-import es.ujaen.dae.clubSocios.excepciones.InscripcionFueraDePlazoException;
+import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
 import jakarta.validation.constraints.*;
 
 import jakarta.validation.constraints.Email;
@@ -51,7 +51,7 @@ public class Socio {
 
     public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
         if (!actividad.estaEnPeriodoInscripcion()) {
-            throw new InscripcionFueraDePlazoException("Inscripción fuera de plazo ");
+            throw new FueraDePlazo("Inscripción fuera de plazo ");
         }
         //Si el socio ya ha hecho una solicitud en la actividad dada
         for (var solicitud: actividad.getSolicitudes()) {
