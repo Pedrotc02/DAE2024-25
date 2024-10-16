@@ -17,7 +17,7 @@ public class Solicitud {
     private int numAcompanantes;
     @NotNull
     private EstadoSolicitud estadoSolicitud;
-    @Past
+    @PastOrPresent
     private LocalDate fechaSolicitud;
 
     private String generarSolicitudId() {
