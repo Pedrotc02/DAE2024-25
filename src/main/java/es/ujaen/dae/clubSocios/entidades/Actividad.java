@@ -3,9 +3,11 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.FechaFinInscripcionNoValida;
-import es.ujaen.dae.clubSocios.excepciones.InscripcionFueraDePlazoException;
+import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
+import es.ujaen.dae.clubSocios.util.UtilList;
 import jakarta.validation.constraints.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -60,14 +62,14 @@ public class Actividad {
 
     public void agregarSolicitud(Solicitud solicitud) {
         if (estado != EstadoActividad.ABIERTA) {
-            throw new InscripcionFueraDePlazoException("No se pueden agregar solicitudes cuando la actividad no está abierta.");
+            throw new FueraDePlazo("No se pueden agregar solicitudes cuando la actividad no está abierta.");
         }
         solicitudes.add(solicitud);
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
         if (estado != EstadoActividad.ABIERTA) {
-            throw new InscripcionFueraDePlazoException("No se pueden quitar solicitudes cuando la actividad no está abierta.");
+            throw new FueraDePlazo("No se pueden quitar solicitudes cuando la actividad no está abierta.");
         }
         solicitudes.remove(solicitud);
     }
@@ -83,8 +85,13 @@ public class Actividad {
                 .collect(Collectors.toList());
     }
 
-
     public void asignarPlazasFinInscripcion() {
+
+        if (LocalDate.now().isBefore(fechaFinInscripcion))
+            throw new FueraDePlazo("La fecha de inscripción no ha finalizado");
+
+        UtilList.ordenarListaPorFecha(this);
+
         // Primera vuelta para parciales
         for (Solicitud solicitud : solicitudes) {
             if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlazas(solicitud.getNumAcompanantes() + 1)) {
@@ -102,12 +109,9 @@ public class Actividad {
         }
     }
 
-
     public void asignarPlazas(int numPlazas) {
         if (numPlazas > plazasDisponibles)
             throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad: " + this.titulo);
-
-
 
         plazasDisponibles -= numPlazas;
     }
@@ -117,8 +121,9 @@ public class Actividad {
         return !now.isBefore(fechaInicioInscripcion) && !now.isAfter(fechaFinInscripcion);
     }
 
-    public void cambiarEstado(EstadoActividad nuevoEstado) {
-        this.estado = nuevoEstado;
+    public void cambiarEstado() {
+        estado = LocalDate.now().isBefore(fechaInicioInscripcion) ? EstadoActividad.CERRADA :
+                LocalDate.now().isAfter(fechaFinInscripcion) ? EstadoActividad.FINALIZADA : EstadoActividad.ABIERTA;
     }
 
     // Getters
