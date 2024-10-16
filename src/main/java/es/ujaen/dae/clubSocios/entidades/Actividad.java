@@ -46,6 +46,15 @@ public class Actividad {
 
     public Actividad(String id, String titulo, String descripcion, double precio,
                      int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
+
+        if (!fechaFinInscripcion.isAfter(fechaInicioInscripcion)) {
+            throw new IllegalArgumentException("La fecha de fin de inscripción debe ser posterior a la fecha de inicio de inscripción.");
+        }
+
+        if (!fechaCelebracion.isAfter(fechaFinInscripcion)) {
+            throw new IllegalArgumentException("La fecha de celebración debe ser posterior a la fecha de fin de inscripción.");
+        }
+
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
