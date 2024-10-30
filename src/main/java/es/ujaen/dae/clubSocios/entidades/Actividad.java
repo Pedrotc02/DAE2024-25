@@ -1,7 +1,9 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
+import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
+import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FechaFinInscripcionNoValida;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
@@ -36,10 +38,6 @@ public class Actividad {
     private LocalDate fechaFinInscripcion;
     private List<Solicitud> solicitudes;
 
-    @NotNull
-
-    private EstadoActividad estado;
-
     public Actividad() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -66,18 +64,17 @@ public class Actividad {
         this.fechaInicioInscripcion = fechaInicioInscripcion;
         this.fechaFinInscripcion = fechaFinInscripcion;
         this.solicitudes = new ArrayList<>();
-        this.estado = EstadoActividad.ABIERTA;
     }
 
     public void agregarSolicitud(Solicitud solicitud) {
-        if (estado != EstadoActividad.ABIERTA) {
+        if (!estaEnPeriodoInscripcion()) {
             throw new FueraDePlazo("No se pueden agregar solicitudes cuando la actividad no está abierta.");
         }
         solicitudes.add(solicitud);
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
-        if (estado != EstadoActividad.ABIERTA) {
+        if (!estaEnPeriodoInscripcion()) {
             throw new FueraDePlazo("No se pueden quitar solicitudes cuando la actividad no está abierta.");
         }
         solicitudes.remove(solicitud);
@@ -91,6 +88,32 @@ public class Actividad {
         return solicitudes.stream()
                 .sorted(Comparator.comparing(Solicitud::getFechaSolicitud))
                 .collect(Collectors.toList());
+    }
+
+    public void solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
+        if (!estaEnPeriodoInscripcion()) {
+            throw new FueraDePlazo("Inscripción fuera de plazo");
+        }
+
+        //Si el socio ya ha hecho una solicitud en la actividad dada
+        for (var solicitud: getSolicitudes()) {
+            if (solicitud.getSocioId().equals(socio.getSocioId()))
+                throw new ActividadYaRegistrada();
+        }
+
+        if (plazasDisponibles == 0)
+            throw new PlazasNoDisponibles("No hay plazas disponibles para la actividad");
+
+        //crear y asignar el estado de la solicitud
+        Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes);
+
+        // no creo que haya que evaluar el estado de la solicitud al solicitar la inscripción, creo que sería mejor
+        // cuando la dirección se encargue de asignar plazas manualmente, porque es cuando realmente se puede poner la solicitud a parcial o cerrada
+        nuevaSolicitud.evaluarEstado(1 + numAcompanantes);
+
+        //añadir la solicitud a la actividad y al socio
+        agregarSolicitud(nuevaSolicitud);
+        solicitudes.add(nuevaSolicitud);
     }
 
     public void asignarPlazasFinInscripcion() {
@@ -127,8 +150,14 @@ public class Actividad {
         return !now.isBefore(fechaInicioInscripcion) && !now.isAfter(fechaFinInscripcion);
     }
 
-    public void cambiarEstado() {
-        estado = estaEnPeriodoInscripcion() ? EstadoActividad.ABIERTA : EstadoActividad.CERRADA;
+    /**
+     * Usando la fecha y hora actual del sistema, devuelve el estado que le corresponde a la actividad
+     * @return el estado que corresponda a la actividad
+     */
+    public EstadoActividad estado() {
+        if (estaEnPeriodoInscripcion())
+            return EstadoActividad.ABIERTA;
+        return EstadoActividad.CERRADA;
     }
 
     // Getters
@@ -150,10 +179,6 @@ public class Actividad {
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
-    }
-
-    public void setEstado(EstadoActividad estado) {
-        this.estado = estado;
     }
 }
 

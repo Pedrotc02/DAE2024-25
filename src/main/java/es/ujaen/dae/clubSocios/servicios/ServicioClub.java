@@ -48,6 +48,8 @@ public class ServicioClub {
 
 
     public void actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
+        if (!socios.containsKey(email))
+            throw new NoSuchElementException();
         socios.get(email).setEstadoCuota(estadoCuota);
     }
 

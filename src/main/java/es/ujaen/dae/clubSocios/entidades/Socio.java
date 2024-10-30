@@ -50,31 +50,6 @@ public class Socio {
         this.estadoCuota = estadoCuota;
     }
 
-    public void solicitarInscripcion(Actividad actividad, @PositiveOrZero int numAcompanantes) {
-        if (!actividad.estaEnPeriodoInscripcion()) {
-            throw new FueraDePlazo("Inscripción fuera de plazo ");
-        }
-        //Si el socio ya ha hecho una solicitud en la actividad dada
-        for (var solicitud: actividad.getSolicitudes()) {
-            if (solicitud.getSocioId().equals(this.socioId))
-                throw new ActividadYaRegistrada();
-        }
-
-        int totalPlazas = 1 + numAcompanantes;
-        EstadoSolicitud estado = evaluarEstadoSolicitud(actividad, totalPlazas);
-        Solicitud nuevaSolicitud = new Solicitud(this.socioId, this, numAcompanantes, estado);
-        solicitudes.add(nuevaSolicitud);
-        actividad.agregarSolicitud(nuevaSolicitud);
-    }
-
-    private EstadoSolicitud evaluarEstadoSolicitud(Actividad actividad, int totalPlazas) {
-
-        if (estadoCuota.equals(EstadoCuota.PAGADA)) {
-            return totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
-        }
-        return EstadoSolicitud.PENDIENTE;
-    }
-
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
         boolean flag = false;
         for (Solicitud solicitud : solicitudes) {
