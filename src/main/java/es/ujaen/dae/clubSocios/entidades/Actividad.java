@@ -8,6 +8,7 @@ import es.ujaen.dae.clubSocios.excepciones.FechaFinInscripcionNoValida;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
 import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
 import es.ujaen.dae.clubSocios.util.UtilList;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.springframework.cglib.core.Local;
 
@@ -17,8 +18,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Entity
 public class Actividad {
-    @NotBlank
+    @Positive
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     @NotBlank
     private String titulo;
@@ -36,7 +40,9 @@ public class Actividad {
     private LocalDate fechaInicioInscripcion;
     @Future
     private LocalDate fechaFinInscripcion;
-    private List<Solicitud> solicitudes;
+    @OneToMany
+    @JoinColumn(name = "actividad_id")
+    List<Solicitud> solicitudes;
 
     public Actividad() {
         throw new UnsupportedOperationException("Not supported yet.");

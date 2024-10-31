@@ -2,22 +2,27 @@ package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 
+@Entity
 public class Solicitud {
-    @NotBlank
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String solicitudId;
     @NotBlank
     private String socioId;
     @NotNull
+    @ManyToOne
     private Socio socio;
     @Min(0) @Max(5)
     private int numAcompanantes;
 
     //Una solicitud está asociada a una actividad y en ningún momento la metíamos
+    @ManyToOne
     private Actividad actividad;
     @NotNull
     private EstadoSolicitud estadoSolicitud;
@@ -26,6 +31,10 @@ public class Solicitud {
 
     @Min(0) @Max(6)
     private int plazasConcedidas;
+
+    public Solicitud(){
+
+    }
 
     public Solicitud(String socioId, Socio socio, int numAcompanantes) {
         this.socioId = socioId;

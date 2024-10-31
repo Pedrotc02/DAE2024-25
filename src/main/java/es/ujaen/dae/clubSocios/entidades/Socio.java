@@ -5,6 +5,10 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.*;
 
 import jakarta.validation.constraints.Email;
@@ -16,11 +20,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-
+@Entity
 public class Socio {
 
-    @NotBlank
     @Email
+    @Id
     private String socioId;
     @NotBlank
     private String nombre;
@@ -37,7 +41,13 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-    List<Solicitud> solicitudes = new ArrayList<>();
+    @OneToMany
+    @JoinColumn(name = "socio_id")
+    List<Solicitud> solicitudes;
+
+    public Socio(){
+
+    }
 
     public Socio(String socioId, String nombre, String apellidos, String dni, String tlf, String claveAcceso,
                  EstadoCuota estadoCuota) {
@@ -48,6 +58,7 @@ public class Socio {
         this.tlf = tlf;
         this.claveAcceso = claveAcceso;
         this.estadoCuota = estadoCuota;
+        solicitudes = new ArrayList<>();
     }
 
     public void modificarSolicitud(String solicitudId, int numAcompanantes) {
