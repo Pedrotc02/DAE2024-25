@@ -15,14 +15,15 @@ public class Solicitud {
     private String solicitudId;
     @NotBlank
     private String socioId;
-    @NotNull
     @ManyToOne
+    @JoinColumn(name = "socio_id")
     private Socio socio;
     @Min(0) @Max(5)
     private int numAcompanantes;
 
     //Una solicitud está asociada a una actividad y en ningún momento la metíamos
     @ManyToOne
+    @JoinColumn(name = "actividad_id")
     private Actividad actividad;
     @NotNull
     private EstadoSolicitud estadoSolicitud;

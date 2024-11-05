@@ -19,7 +19,7 @@ public class Temporada {
     @Min(2000)
     @Max(9999)
     private int anio;
-    @OneToMany
+    @OneToMany(mappedBy = "temporada")
     private SortedMap<String, Actividad> actividades;
 
     public Temporada(){

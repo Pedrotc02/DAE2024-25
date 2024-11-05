@@ -41,8 +41,7 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-    @OneToMany
-    @JoinColumn(name = "socio_id")
+    @OneToMany(mappedBy = "socio")
     List<Solicitud> solicitudes;
 
     public Socio(){

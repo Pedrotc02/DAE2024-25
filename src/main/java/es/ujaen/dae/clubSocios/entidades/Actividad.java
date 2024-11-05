@@ -40,8 +40,7 @@ public class Actividad {
     private LocalDate fechaInicioInscripcion;
     @Future
     private LocalDate fechaFinInscripcion;
-    @OneToMany
-    @JoinColumn(name = "actividad_id")
+    @OneToMany(mappedBy = "actividad")
     List<Solicitud> solicitudes;
 
     public Actividad() {
