@@ -99,7 +99,7 @@ public class Actividad {
 
         Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes);
 
-        nuevaSolicitud.evaluarEstado(1 + numAcompanantes);
+        nuevaSolicitud.evaluarEstado();
 
         agregarSolicitud(nuevaSolicitud);
         solicitudes.add(nuevaSolicitud);
@@ -140,7 +140,7 @@ public class Actividad {
         }
 
         asignarPlaza(solicitud);
-        solicitud.evaluarEstado(solicitud.getNumAcompanantes());
+        solicitud.evaluarEstado();
     }
 
     /**
@@ -161,14 +161,14 @@ public class Actividad {
         for (Solicitud solicitud : solicitudes) {
             if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlaza()) {
                 asignarPlaza(solicitud);
-                solicitud.evaluarEstado(solicitud.getNumAcompanantes() + 1);
+                solicitud.evaluarEstado();
             }
         }
 
         for (Solicitud solicitud : solicitudes) {
             if (!solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza()) {
                 asignarPlaza(solicitud);
-                solicitud.evaluarEstado(solicitud.getNumAcompanantes() + 1);
+                solicitud.evaluarEstado();
             }
         }
     }
@@ -199,6 +199,10 @@ public class Actividad {
      * @param cel fecha de celebración de la actividad
      */
     private void comprobarFechasActividad(LocalDate ini, LocalDate fin, LocalDate cel) {
+        int actual = LocalDate.now().getYear();
+        if (ini.getYear() != actual && fin.getYear() != actual && cel.getYear() != actual)
+            throw new InvalidoAnio();
+
         if (!fin.isAfter(ini))
             throw new FechaNoValida();
 
