@@ -42,7 +42,7 @@ public class Temporada {
 
     public void setAnio(int anio){
         if (anio > LocalDate.EPOCH.getYear())
-            throw new InvalidoAnio("Este no es el anio actual");
+            throw new InvalidoAnio();
         this.anio = anio;
     }
 }

@@ -2,30 +2,23 @@ package clubSocios.servicios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
-import es.ujaen.dae.clubSocios.entidades.Solicitud;
-import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
-import es.ujaen.dae.clubSocios.excepciones.ActividadNoExistente;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.OperacionDeDireccion;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.constraints.Email;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
-import static org.springframework.test.util.AssertionErrors.assertNotNull;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class)
 public class TestServicioClub {

@@ -52,12 +52,16 @@ public class Solicitud {
         this.numAcompanantes = nuevoNumAcompanantes;
     }
 
+    public void concederPlaza() {
+        plazasConcedidas++;
+    }
+
     public void evaluarEstado(int totalPlazas) {
         if (!socio.getEstadoCuota().equals(EstadoCuota.PAGADA) || actividad.getPlazasDisponibles() == 0) {
             this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
+        } else {
+            this.estadoSolicitud = totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
         }
-
-        this.estadoSolicitud = totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
     }
 
     // Getters
@@ -91,5 +95,9 @@ public class Solicitud {
 
     public void setEstadoSolicitud(EstadoSolicitud estadoSolicitud) {
         this.estadoSolicitud = estadoSolicitud;
+    }
+
+    public int getPlazasConcedidas() {
+        return plazasConcedidas;
     }
 }

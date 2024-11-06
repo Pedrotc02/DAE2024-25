@@ -4,7 +4,7 @@ import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
-import es.ujaen.dae.clubSocios.excepciones.PlazasNoDisponibles;
+import es.ujaen.dae.clubSocios.excepciones.NoHayPlazas;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -47,12 +47,12 @@ public class TestActividad {
         var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
         assertThatThrownBy( () -> {
-            actividad1.asignarPlazas(5);
-        }).isInstanceOf(PlazasNoDisponibles.class);
+            actividad1.asignarPlaza(5);
+        }).isInstanceOf(NoHayPlazas.class);
 
         var actividad2 = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
         assertDoesNotThrow( () -> {
-            actividad2.asignarPlazas(5);
+            actividad2.asignarPlaza(5);
         });
     }
 
@@ -147,7 +147,7 @@ public class TestActividad {
     void testAsignarPlazas() {
         var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
-        actividad.asignarPlazas(3);
+        actividad.asignarPlaza(3);
 
         assertEquals("El numero de plazas disponibles debe ser 1", 1, actividad.getPlazasDisponibles());
     }
@@ -157,8 +157,8 @@ public class TestActividad {
     void testAsignarPlazasError() {
         var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4,LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
 
-        PlazasNoDisponibles exception = assertThrows(PlazasNoDisponibles.class, () -> {
-            actividad.asignarPlazas(5);
+        NoHayPlazas exception = assertThrows(NoHayPlazas.class, () -> {
+            actividad.asignarPlaza(5);
         });
     }
 
