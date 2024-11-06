@@ -37,7 +37,6 @@ public class Solicitud {
 
     }
 
-    public Solicitud(String socioId, Socio socio, int numAcompanantes) {
     public Solicitud(String socioId, Socio socio, int numAcompanantes, Actividad actividad) {
         this.socioId = socioId;
         this.socio = socio;
