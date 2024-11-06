@@ -97,7 +97,7 @@ public class Actividad {
                 throw new ActividadYaRegistrada();
         }
 
-        Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes);
+        Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes, this);
 
         nuevaSolicitud.evaluarEstado();
 

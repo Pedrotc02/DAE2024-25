@@ -27,10 +27,11 @@ public class Solicitud {
     @Min(0) @Max(6)
     private int plazasConcedidas;
 
-    public Solicitud(String socioId, Socio socio, int numAcompanantes) {
+    public Solicitud(String socioId, Socio socio, int numAcompanantes, Actividad actividad) {
         this.socioId = socioId;
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
+        this.actividad = actividad;
         //El id de la solicitud se crea en función del id del socio, el id de actividad y la fecha en la que se realiza
         this.solicitudId = generarSolicitudId();
         //Todas las solicitudes se crean con un estado pendiente
@@ -39,6 +40,7 @@ public class Solicitud {
         this.fechaSolicitud = LocalDate.now();
         //Al crear la solicitud de por sí no se concede ninguna plaza, de eso se encarga la propia dirección
         this.plazasConcedidas = 0;
+
     }
 
     private String generarSolicitudId() {
