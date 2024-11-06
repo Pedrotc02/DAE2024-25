@@ -4,15 +4,12 @@ import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
-import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.*;
-import es.ujaen.dae.clubSocios.util.UtilList;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -86,7 +83,7 @@ public class ServicioClub {
     private Actividad obtenerActividadPorId(String actividadId) {
         Actividad actividad = actividades.get(actividadId);
         if (actividad == null) {
-            throw new ActividadNoExistente();
+            throw new ActividadNoValida();
         }
         return actividad;
     }
