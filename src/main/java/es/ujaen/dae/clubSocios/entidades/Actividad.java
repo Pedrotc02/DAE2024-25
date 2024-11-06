@@ -130,10 +130,8 @@ public class Actividad {
         if (!hayPlaza())
             throw new NoHayPlazas();
 
-        for (Solicitud s: solicitudes) {
-            if (!s.getSolicitudId().equals(solicitud.getSolicitudId()))
-                throw new SolicitudNoExiste();
-        }
+        if (!solicitudes.contains(solicitud))
+            throw new SolicitudNoExiste();
 
         if (solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA)) {
             throw new ActividadYaRegistrada();

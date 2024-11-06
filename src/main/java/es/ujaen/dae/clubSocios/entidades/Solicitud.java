@@ -71,7 +71,7 @@ public class Solicitud {
         if (!socio.getEstadoCuota().equals(EstadoCuota.PAGADA) || !actividad.hayPlaza()) {
             this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
         } else {
-            this.estadoSolicitud = totalPlazas > 1 && plazasConcedidas < totalPlazas ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
+            this.estadoSolicitud = totalPlazas > 1 && plazasConcedidas <= totalPlazas ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
         }
     }
 
