@@ -56,11 +56,20 @@ public class Solicitud {
         plazasConcedidas++;
     }
 
-    public void evaluarEstado(int totalPlazas) {
-        if (!socio.getEstadoCuota().equals(EstadoCuota.PAGADA) || actividad.getPlazasDisponibles() == 0) {
+    /**
+     * Asigna el estado que le corresponde a cada solicitud.
+     * Para ello, comprueba si el socio ha pagado y si hay plaza en la actividad, en caso contrario la solicitud será Pendiente.
+     * Si estas condiciones son ciertas, asigna el estado de la solicitud teniendo en cuenta que:
+     *      si el número total de plazas de la solicitud (acompañantes + socio) es mayor que 1 y
+     *      si no se han concedido todas las plazas de la solicitud
+     * La solicitud será Parcial en este caso, y Cerrada en caso contrario.
+     */
+    public void evaluarEstado() {
+        int totalPlazas = numAcompanantes + 1;
+        if (!socio.getEstadoCuota().equals(EstadoCuota.PAGADA) || !actividad.hayPlaza()) {
             this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
         } else {
-            this.estadoSolicitud = totalPlazas > 1 ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
+            this.estadoSolicitud = totalPlazas > 1 && plazasConcedidas < totalPlazas ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
         }
     }
 
