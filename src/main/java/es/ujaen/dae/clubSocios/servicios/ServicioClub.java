@@ -137,4 +137,14 @@ public class ServicioClub {
             throw new OperacionDeDireccion();
         }
     }
+
+    public Map<String, Actividad> actividades(){
+        return actividades;
+    }
+
+    public Map<String, Socio> socios(){
+        return socios;
+    }
+
+
 }

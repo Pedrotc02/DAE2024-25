@@ -17,8 +17,6 @@ public class Solicitud {
     @Min(0) @Max(5)
     private int numAcompanantes;
 
-    //Una solicitud está asociada a una actividad y en ningún momento la metíamos
-    private Actividad actividad;
     @NotNull
     private EstadoSolicitud estadoSolicitud;
     @PastOrPresent
@@ -27,11 +25,10 @@ public class Solicitud {
     @Min(0) @Max(6)
     private int plazasConcedidas;
 
-    public Solicitud(String socioId, Socio socio, int numAcompanantes, Actividad actividad) {
+    public Solicitud(String socioId, Socio socio, int numAcompanantes) {
         this.socioId = socioId;
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
-        this.actividad = actividad;
         //El id de la solicitud se crea en función del id del socio, el id de actividad y la fecha en la que se realiza
         this.solicitudId = generarSolicitudId();
         //Todas las solicitudes se crean con un estado pendiente
@@ -44,7 +41,7 @@ public class Solicitud {
     }
 
     private String generarSolicitudId() {
-        return this.socioId + "-" +"Act"+actividad.getId()+"-"+ System.currentTimeMillis();
+        return this.socioId +"-"+ System.currentTimeMillis();
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -54,7 +51,7 @@ public class Solicitud {
         this.numAcompanantes = nuevoNumAcompanantes;
     }
 
-    public void concederPlaza() {
+    protected void concederPlaza() {
         plazasConcedidas++;
     }
 
@@ -66,12 +63,14 @@ public class Solicitud {
      *      si no se han concedido todas las plazas de la solicitud
      * La solicitud será Parcial en este caso, y Cerrada en caso contrario.
      */
-    public void evaluarEstado() {
+    public void evaluarEstado(Actividad actividad) {
         int totalPlazas = numAcompanantes + 1;
         if (!socio.getEstadoCuota().equals(EstadoCuota.PAGADA) || !actividad.hayPlaza()) {
             this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
         } else {
-            this.estadoSolicitud = totalPlazas > 1 && plazasConcedidas <= totalPlazas ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
+            this.estadoSolicitud = totalPlazas > 1 &&
+                    plazasConcedidas >= 1 &&
+                    plazasConcedidas <= totalPlazas  ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
         }
     }
 

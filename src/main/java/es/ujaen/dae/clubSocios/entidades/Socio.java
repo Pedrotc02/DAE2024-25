@@ -37,7 +37,7 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-    List<Solicitud> solicitudes = new ArrayList<>();
+    private List<Solicitud> solicitudes = new ArrayList<>();
 
     public Socio(String socioId, String nombre, String apellidos, String dni, String tlf, String claveAcceso,
                  EstadoCuota estadoCuota) {
@@ -83,7 +83,7 @@ public class Socio {
     }
 
 
-    public void anadirSolicitud(Solicitud solicitud) {
+    protected void anadirSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
     }
 
@@ -114,6 +114,10 @@ public class Socio {
 
     public EstadoCuota getEstadoCuota() {
         return estadoCuota;
+    }
+
+    public List<Solicitud> getSolicitudes() {
+        return solicitudes;
     }
 
     // Setters

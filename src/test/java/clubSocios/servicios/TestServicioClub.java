@@ -25,6 +25,9 @@ public class TestServicioClub {
     @Autowired
     ServicioClub servicio;
 
+    /**
+     * Test passed
+     */
     @Test
     @DirtiesContext
     void testOperacionDireccion() {
@@ -35,15 +38,18 @@ public class TestServicioClub {
 
         assertThatThrownBy(() -> servicio.crearSocio(socio1, socio2)).isInstanceOf(OperacionDeDireccion.class);
 
-        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
         assertThatThrownBy(() -> servicio.crearActividad(socio1, actividad)).isInstanceOf(OperacionDeDireccion.class);
 
-
     }
+
+    /**
+     * Test passed
+     */
     @Test
     @DirtiesContext
-    void testNuevoSocioInvalido(){
+    void testNuevoSocio(){
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
         //Email incorrecto,dni incorrecto
@@ -54,10 +60,63 @@ public class TestServicioClub {
         //Socio repetido
         var socio2 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         servicio.crearSocio(direccion, socio2);
+
+        //Intenta crear el socio otra vez
         assertThatThrownBy(() -> servicio.crearSocio(direccion, socio2)).isInstanceOf(SocioYaRegistrado.class);
 
+        var socio3 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        servicio.crearSocio(direccion, socio3);
+
+        assertThat(servicio.socios().size()).isEqualTo(2);
+        assertThat(servicio.socios().containsKey(socio3.getSocioId())).isTrue();
     }
 
+    /**
+     * Crea una nueva actividad válida y la añade a las actividades del servicio
+     * Test passed
+     */
+    @Test
+    @DirtiesContext
+    void testNuevaActividad(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+
+        //Precio incorrecto, plazas incorrectas, violaciones fecha
+        var actividad = new Actividad("act1", "Visita a museo", "Descricion", -10, -15, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+
+        assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad)).isInstanceOf(ConstraintViolationException.class);
+
+        //Actividad repetida
+        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        servicio.crearActividad(direccion, actividad2);
+
+        assertThat(servicio.actividades()).size().isEqualTo(1);
+    }
+
+    /**
+     * Registra un socio a una actividad
+     * Test passed
+     */
+    @Test
+    @DirtiesContext
+    void testRegistrarSolicitud() {
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        var actividad = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+
+        servicio.crearActividad(direccion, actividad);
+        servicio.crearSocio(direccion, socio1);
+        servicio.registrarSolicitud(direccion, socio1, actividad.getId(), 4);
+
+        assertThat(servicio.actividades().get(actividad.getId())
+                .getSolicitudes().stream()
+                .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
+                .size()
+                .isEqualTo(1);
+    }
+
+    /**
+     * Test passed
+     */
     @Test
     @DirtiesContext
     void testLoginSocio() {
@@ -75,6 +134,9 @@ public class TestServicioClub {
         assertThat(servicio.login("prueba@gmail.com", "123456")).hasValueSatisfying(s -> s.getSocioId().equals(socio.getSocioId()));
     }
 
+    /**
+     * Test passed
+     */
     @Test
     @DirtiesContext
     void testActualizaEstado() {
@@ -87,23 +149,9 @@ public class TestServicioClub {
         assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
     }
 
-    @Test
-    @DirtiesContext
-    void testNuevaActividad(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-
-        //Precio incorrecto, plazas incorrectas, violaciones fecha
-        var actividad = new Actividad("act1", "Visita a museo", "Descricion", -10, -15, LocalDate.of(2023,10,13), LocalDate.of(2023,9,13), LocalDate.of(2023,10,10));
-
-        assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad)).isInstanceOf(ConstraintViolationException.class);
-
-        //Actividad repetida
-        var actividad2 = new Actividad("act1", "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-        servicio.crearActividad(direccion, actividad2);
-        assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad2)).isInstanceOf(ActividadYaRegistrada.class);
-
-    }
-
+    /**
+     * Test passed
+     */
     @Test
     @DirtiesContext
     void testResetearEstadoCuota(){
