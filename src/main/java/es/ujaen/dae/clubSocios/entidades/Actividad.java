@@ -92,13 +92,11 @@ public class Actividad {
         if (!hayPlaza())
             throw new NoHayPlazas();
 
-        for (var solicitud: getSolicitudes()) {
-            if (solicitud.getSocioId().equals(socio.getSocioId()))
-                throw new ActividadYaRegistrada();
-        }
+        if (solicitudes.stream()
+                       .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
+            throw new ActividadYaRegistrada();
 
         Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes, this);
-
         nuevaSolicitud.evaluarEstado();
 
         agregarSolicitud(nuevaSolicitud);
@@ -156,19 +154,19 @@ public class Actividad {
         if (!hayPlaza())
             throw new NoHayPlazas();
 
-        for (Solicitud solicitud : solicitudes) {
-            if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlaza()) {
-                asignarPlaza(solicitud);
-                solicitud.evaluarEstado();
-            }
-        }
+        solicitudes.stream()
+                   .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
+                   .forEach(solicitud -> {
+                       asignarPlaza(solicitud);
+                       solicitud.evaluarEstado();
+                   });
 
-        for (Solicitud solicitud : solicitudes) {
-            if (!solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza()) {
-                asignarPlaza(solicitud);
-                solicitud.evaluarEstado();
-            }
-        }
+        solicitudes.stream()
+                   .filter(s -> !s.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza())
+                   .forEach(solicitud -> {
+                       asignarPlaza(solicitud);
+                       solicitud.evaluarEstado();
+                   });
     }
 
     /**
