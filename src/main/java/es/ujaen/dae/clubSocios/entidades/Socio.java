@@ -90,7 +90,7 @@ public class Socio {
     }
 
 
-    public void anadirSolicitud(Solicitud solicitud) {
+    protected void anadirSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
     }
 
@@ -121,6 +121,10 @@ public class Socio {
 
     public EstadoCuota getEstadoCuota() {
         return estadoCuota;
+    }
+
+    public List<Solicitud> getSolicitudes() {
+        return solicitudes;
     }
 
     // Setters

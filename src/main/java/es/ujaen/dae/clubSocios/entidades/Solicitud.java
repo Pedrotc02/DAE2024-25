@@ -58,7 +58,7 @@ public class Solicitud {
         this.numAcompanantes = nuevoNumAcompanantes;
     }
 
-    public void concederPlaza() {
+    protected void concederPlaza() {
         plazasConcedidas++;
     }
 

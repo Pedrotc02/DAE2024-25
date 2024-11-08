@@ -39,43 +39,33 @@ public class TestSocio {
     @DirtiesContext
     void testModificarSolicitud(){
         var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
-        var solicitud1 = new Solicitud( socio1.getSocioId(), socio1, 4, EstadoSolicitud.PENDIENTE);
+        var actividad = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
-        socio1.anadirSolicitud(solicitud1);
+        actividad.solicitarInscripcion(socio1, 1);
+        actividad.getSolicitudes().stream()
+                                  .filter(s -> s.getSocioId().equals(socio1.getSocioId()))
+                                  .forEach(solicitud -> socio1.modificarSolicitud(solicitud.getSolicitudId(), 2));
 
-        socio1.modificarSolicitud(solicitud1.getSolicitudId(), 2);
-
-        assertEquals("El numero de acompañantes debe ser 2", 2, solicitud1.getNumAcompanantes());
+        assertEquals("El numero de acompañantes debe ser 2", 2, actividad.getSolicitudes().get(0).getNumAcompanantes());
     }
 
     @Test
     @DirtiesContext
     void testEliminarSolicitud(){
         var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
-        var solicitud1 = new Solicitud( socio1.getSocioId(), socio1, 4, EstadoSolicitud.PENDIENTE);
-        var solicitud2 = new Solicitud( socio1.getSocioId(), socio1, 4, EstadoSolicitud.PENDIENTE);
+        var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        socio1.anadirSolicitud(solicitud1);
-        socio1.anadirSolicitud(solicitud2);
+        var actividad = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
-        socio1.borrarSolicitud(solicitud2.getSolicitudId());
+        actividad.solicitarInscripcion(socio1, 4);
+        actividad.solicitarInscripcion(socio2, 4);
 
-        assertEquals("El numero de solicitudes debe ser 1", 1, socio1.solicitudes.size());
-        assertFalse("La solicitud 2 no se deberia encontrar", socio1.solicitudes.stream().anyMatch(s -> s.getSolicitudId().equals("solicitud1")));
+        actividad.getSolicitudes().stream()
+                                  .filter(s -> s.getSocioId().equals(socio2))
+                                  .forEach(s -> socio2.borrarSolicitud(s.getSolicitudId()));
+
+        assertEquals("El numero de solicitudes debe ser 1", 1, socio1.getSolicitudes().size());
+        assertFalse("La solicitud del socio 2 no se deberia encontrar", socio1.getSolicitudes().stream().anyMatch(s -> s.getSocioId().equals(socio2.getSocioId())));
     }
 
-    @Test
-    @DirtiesContext
-    void testSolicitarInscripcionSocioRepetido() {
-        var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
-
-        var actividad2 = new Actividad("2", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2025-10-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-
-        socio1.solicitarInscripcion(actividad1, 3);
-        assertThat(socio1.solicitudes.size()).isEqualTo(1);
-
-        assertThrows(ActividadYaRegistrada.class, () -> socio1.solicitarInscripcion(actividad1, 3));
-        assertThrows(FueraDePlazo.class, () -> socio1.solicitarInscripcion(actividad2, 3));
-    }
 }

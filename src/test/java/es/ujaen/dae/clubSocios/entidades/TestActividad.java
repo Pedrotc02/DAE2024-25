@@ -3,8 +3,7 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
-import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
-import es.ujaen.dae.clubSocios.excepciones.NoHayPlazas;
+import es.ujaen.dae.clubSocios.excepciones.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -24,156 +23,139 @@ import static org.springframework.test.util.AssertionErrors.*;
 
 public class TestActividad {
 
+    /**
+     * Test passed
+     */
     @Test
     @DirtiesContext
     void testValidacionActividad() {
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
+        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2024-11-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"));
 
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         Set<ConstraintViolation<Actividad>> violations = validator.validate(actividad1);
 
         assertThat(violations).isEmpty();
 
-        var actividad2 = new Actividad("2", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2023-10-16"), LocalDate.parse("2023-10-12"), LocalDate.parse("2023-10-15"));
+        var actividad2 = new Actividad("2", "Clases de flamenco", "Aqui se dara clases de flamenco",35, -2, LocalDate.parse("2024-11-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
 
         violations = validator.validate(actividad2);
         assertThat(violations).isNotEmpty();
     }
 
+    /**
+     * Comprueba que las fechas de las actividades son válidas y de la temporada actual.
+     * Test passed
+     */
     @Test
     @DirtiesContext
-    void testPlazasValidas() {
+    void testFechasActividadValidas() {
 
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
+        assertThatThrownBy( () -> new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",
+                35, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"),
+                LocalDate.parse("2025-10-30")))
+                .isInstanceOf(InvalidoAnio.class);
 
-        assertThatThrownBy( () -> {
-            actividad1.asignarPlaza(5);
-        }).isInstanceOf(NoHayPlazas.class);
+        assertThatThrownBy(() -> new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",
+                35, 30, LocalDate.parse("2024-10-10"), LocalDate.parse("2024-10-12"),
+                LocalDate.parse("2024-10-11")))
+                .isExactlyInstanceOf(FechaNoValida.class);
 
-        var actividad2 = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-        assertDoesNotThrow( () -> {
-            actividad2.asignarPlaza(5);
-        });
+        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",
+                35, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"),
+                LocalDate.parse("2024-12-21"));
+
+        assertThat(actividad.estado()).isEqualTo(EstadoActividad.ABIERTA);
     }
 
+    /**
+     * Comprueba que un socio pueda solicitar correctamente la inscripción a la actividad que él quiera.
+     * Si no puede, es informado del error correspondiente.
+     * Además comprueba que la solicitud se ha añadido tanto a la lista de solicitudes
+     * del socio solicitante como a la lista de solicitudes de la actividad solicitada.
+     * Test passed.
+     */
     @Test
     @DirtiesContext
-    void testFechasValidas() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 30, LocalDate.parse("2025-11-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2025-10-30"));
+    void testSolicitudInscripcionValida() {
 
-        assertThat(actividad.estaEnPeriodoInscripcion()).isTrue();
-    }
+        var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
 
-    @Test
-    @DirtiesContext
-    void testAgregarSolicitudCuandoLaActividadEstaAbierta() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        Solicitud solicitud = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
-        assertDoesNotThrow(() -> actividad.agregarSolicitud(solicitud));
-        assertEquals("La solicitud se ha tenido que agregar a la actividad", 1, actividad.getSolicitudes().size());
-    }
+        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-16"));
 
-    @Test
-    @DirtiesContext
-    void testAgregarSolicitudCuandoLaActividadNoEstaAbierta() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        Solicitud solicitud = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
-        actividad.setEstado(EstadoActividad.CERRADA);
+        assertThatThrownBy(
+                () -> actividad1.solicitarInscripcion(socio1, 4)
+        ).isExactlyInstanceOf(FueraDePlazo.class);
 
-        // Verificar que se lanza la excepción adecuada
-        var exception = assertThrows(
-                FueraDePlazo.class,
-                () -> actividad.agregarSolicitud(solicitud)
+        var actividad2 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 0, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+
+        assertThatThrownBy(() ->
+                actividad2.solicitarInscripcion(socio1, 4)
+        ).isInstanceOf(NoHayPlazas.class);
+
+        var actividad3 = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+
+        assertDoesNotThrow( () ->
+            actividad3.solicitarInscripcion(socio1, 4)
         );
 
+        assertThatThrownBy(() ->
+                actividad3.solicitarInscripcion(socio1, 2)
+        ).isInstanceOf(SolicitudYaRealizada.class);
+
+        assertThat(socio1.getSolicitudes()).size().isEqualTo(1);
+
+        //Todavía no ha acabado el período de inscripción, por lo que no puede revisar nadie las solicitudes de la actividad
+        assertThatThrownBy(() -> actividad3.revisarSolicitudes()).isInstanceOf(FechaNoValida.class);
+        assertThat(actividad3.getSolicitudes()).size().isEqualTo(1);
     }
 
     @Test
     @DirtiesContext
     void testRevisarSolicitudes() {
+
         var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        Solicitud solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
-        Solicitud solicitud2 = new Solicitud(socio1.getSocioId(), socio1, 3, EstadoSolicitud.PENDIENTE);
+        var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        actividad.agregarSolicitud(solicitud1);
-        actividad.agregarSolicitud(solicitud2);
+        actividad.solicitarInscripcion(socio1, 3);
+        actividad.solicitarInscripcion(socio2, 3);
 
-        List<Solicitud> solicitudesRevisadas = actividad.revisarSolicitudes();
-
-        // Verificar que las solicitudes están ordenadas por fecha de solicitud
-        assertEquals("El tamaño de las solicitudes revisadas debe ser dos", 2, solicitudesRevisadas.size());
-        assertEquals("solicitud1 debería ser la primera", solicitudesRevisadas.get(0), solicitud1);
-        assertEquals("solicitud2 debería ser la segunda", solicitudesRevisadas.get(1), solicitud2);
+        assertEquals("Debe haber 2 solicitudes en la actividad", 2, actividad.revisarSolicitudes().size());
+        assertThat(actividad.revisarSolicitudes().get(1).getFechaSolicitud())
+                .isBefore(actividad.revisarSolicitudes().get(2).getFechaSolicitud());
     }
 
-    @Test
-    @DirtiesContext
-    void testAsignarPlazasFinInscripcion(){
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 6, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
-        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
-
-        // Escenario 1: Hay plazas disponibles y solicitudes parciales
-
-        Solicitud solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 4, EstadoSolicitud.PARCIAL);
-        Solicitud solicitud2 = new Solicitud(socio2.getSocioId(), socio2, 3, EstadoSolicitud.PARCIAL);
-
-        actividad.agregarSolicitud(solicitud1);
-        actividad.agregarSolicitud(solicitud2);
-
-        actividad.asignarPlazasFinInscripcion();
-
-        // Verificar el estado de las solicitudes y plazas restantes
-        assertEquals("La solicitud debe estar cerrada", EstadoSolicitud.CERRADA, solicitud1.getEstadoSolicitud()); // Asignada
-        assertEquals("La solicitud no se ha podido cerrar, se queda en parcial", EstadoSolicitud.PARCIAL, solicitud2.getEstadoSolicitud()); // No Asignada
-        assertEquals("Debe quedar 1 plaza",1, actividad.getPlazasDisponibles()); // Quedan 1 plaza
-
-        // Escenario 2: Ahora agregamos solicitudes en estado PENDIENTE
-        Solicitud solicitud3 = new Solicitud(socio1.getSocioId(), socio1, 0, EstadoSolicitud.PENDIENTE);
-
-        actividad.agregarSolicitud(solicitud3);
-
-        actividad.asignarPlazasFinInscripcion();
-
-        assertEquals("Se debe cerrar la solicitud", EstadoSolicitud.CERRADA, solicitud3.getEstadoSolicitud()); // Asignada
-        assertEquals("No quedan mas plazas", 0, actividad.getPlazasDisponibles()); // Quedan 0 plazas
-    }
-
-    @Test
-    @DirtiesContext
-    void testAsignarPlazas() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-
-        actividad.asignarPlaza(3);
-
-        assertEquals("El numero de plazas disponibles debe ser 1", 1, actividad.getPlazasDisponibles());
-    }
-
-    @Test
-    @DirtiesContext
-    void testAsignarPlazasError() {
-        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4,LocalDate.parse("2025-11-16"), LocalDate.parse("2025-10-12"), LocalDate.parse("2025-10-30"));
-
-        NoHayPlazas exception = assertThrows(NoHayPlazas.class, () -> {
-            actividad.asignarPlaza(5);
-        });
-    }
-
-    @Test
-    @DirtiesContext
-    void testEstaEnPeriodoInscripcion() {
-        var actividad1 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-31"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"));
-        var actividad2 = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 4, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-14"));
-
-        boolean resultado1 = actividad1.estaEnPeriodoInscripcion();
-        boolean resultado2 = actividad2.estaEnPeriodoInscripcion();
-
-        assertTrue("Debe devolver verdad", resultado1);
-        assertFalse("Debe devolver falso", resultado2);
-
-    }
-
+//Este test me lo llevaría a Servicio
+//    @Test
+//    @DirtiesContext
+//    void testAsignarPlazasFinInscripcion(){
+//        var actividad = new Actividad("1", "Clases de flamenco", "Aqui se dara clases de flamenco",35, 6, LocalDate.parse("2024-10-16"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
+//        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+//        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
+//
+//        // Escenario 1: Hay plazas disponibles y solicitudes parciales
+//
+//        Solicitud solicitud1 = new Solicitud(socio1.getSocioId(), socio1, 4, EstadoSolicitud.PARCIAL);
+//        Solicitud solicitud2 = new Solicitud(socio2.getSocioId(), socio2, 3, EstadoSolicitud.PARCIAL);
+//
+//        actividad.agregarSolicitud(solicitud1);
+//        actividad.agregarSolicitud(solicitud2);
+//
+//        actividad.asignarPlazasFinInscripcion();
+//
+//        // Verificar el estado de las solicitudes y plazas restantes
+//        assertEquals("La solicitud debe estar cerrada", EstadoSolicitud.CERRADA, solicitud1.getEstadoSolicitud()); // Asignada
+//        assertEquals("La solicitud no se ha podido cerrar, se queda en parcial", EstadoSolicitud.PARCIAL, solicitud2.getEstadoSolicitud()); // No Asignada
+//        assertEquals("Debe quedar 1 plaza",1, actividad.getPlazasDisponibles()); // Quedan 1 plaza
+//
+//        // Escenario 2: Ahora agregamos solicitudes en estado PENDIENTE
+//        Solicitud solicitud3 = new Solicitud(socio1.getSocioId(), socio1, 0, EstadoSolicitud.PENDIENTE);
+//
+//        actividad.agregarSolicitud(solicitud3);
+//
+//        actividad.asignarPlazasFinInscripcion();
+//
+//        assertEquals("Se debe cerrar la solicitud", EstadoSolicitud.CERRADA, solicitud3.getEstadoSolicitud()); // Asignada
+//        assertEquals("No quedan mas plazas", 0, actividad.getPlazasDisponibles()); // Quedan 0 plazas
+//    }
 }

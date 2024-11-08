@@ -60,7 +60,7 @@ public class Actividad {
         this.solicitudes = new ArrayList<>();
     }
 
-    public void agregarSolicitud(Solicitud solicitud) {
+    private void agregarSolicitud(Solicitud solicitud) {
         if (!estaEnPeriodoInscripcion()) {
             throw new FueraDePlazo();
         }
@@ -75,8 +75,7 @@ public class Actividad {
     }
 
     public List<Solicitud> revisarSolicitudes() {
-        LocalDate now = LocalDate.now();
-        if (now.isBefore(fechaFinInscripcion)) {
+        if (estado() != EstadoActividad.ABIERTA) {
             throw new FechaNoValida();
         }
         return solicitudes.stream()
@@ -102,7 +101,7 @@ public class Actividad {
             throw new NoHayPlazas();
 
         if (solicitudes.stream()
-                .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
+                       .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
             throw new SolicitudYaRealizada();
 
         Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes);
@@ -125,6 +124,7 @@ public class Actividad {
 
         plazasDisponibles--;
         s.concederPlaza();
+        s.evaluarEstado(this);
     }
 
     /**
@@ -137,6 +137,7 @@ public class Actividad {
      * @param solicitud solicitud en la que se van a asignar las plazas.
      */
     public void asignarPlazasFinal(Solicitud solicitud) {
+
         if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
             throw new FueraDePlazo();
         }
@@ -170,12 +171,12 @@ public class Actividad {
             throw new NoHayPlazas();
 
         solicitudes.stream()
-                .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
-                .forEach(solicitud -> asignarPlaza(solicitud));
+                   .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
+                   .forEach(solicitud -> asignarPlaza(solicitud));
 
         solicitudes.stream()
-                .filter(s -> !s.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza())
-                .forEach(solicitud -> asignarPlaza(solicitud));
+                   .filter(s -> !s.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza())
+                   .forEach(solicitud -> asignarPlaza(solicitud));
     }
 
     /**
@@ -192,9 +193,11 @@ public class Actividad {
      * @return el estado de la actividad
      */
     public EstadoActividad estado() {
-        if (estaEnPeriodoInscripcion())
-            return EstadoActividad.ABIERTA;
-        return EstadoActividad.CERRADA;
+        if (LocalDate.now().isBefore(fechaInicioInscripcion))
+            return EstadoActividad.CERRADA;
+        if (LocalDate.now().isAfter(fechaFinInscripcion))
+            return EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO;
+        return EstadoActividad.ABIERTA;
     }
 
     /**
@@ -203,7 +206,7 @@ public class Actividad {
      * @param fin fecha fin de actividad
      * @param cel fecha de celebración de la actividad
      */
-    private void comprobarFechasActividad(LocalDate ini, LocalDate fin, LocalDate cel) {
+    private void comprobarFechasActividad(@NotNull LocalDate ini,@NotNull LocalDate fin,@NotNull LocalDate cel) {
         int actual = LocalDate.now().getYear();
         if (ini.getYear() != actual && fin.getYear() != actual && cel.getYear() != actual)
             throw new InvalidoAnio();
