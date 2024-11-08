@@ -1,6 +1,7 @@
 package es.ujaen.dae.clubSocios.entidades;
 
 import es.ujaen.dae.clubSocios.enums.EstadoActividad;
+import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
@@ -34,7 +35,7 @@ public class Actividad {
     private LocalDate fechaCelebracion;
     private LocalDate fechaInicioInscripcion;
     private LocalDate fechaFinInscripcion;
-    @OneToMany(mappedBy = "actividad")
+    @OneToMany
     List<Solicitud> solicitudes;
 
     public Actividad() {
@@ -100,17 +101,18 @@ public class Actividad {
         if (!hayPlaza())
             throw new NoHayPlazas();
 
-        for (var solicitud: getSolicitudes()) {
-            if (solicitud.getSocioId().equals(socio.getSocioId()))
-                throw new ActividadYaRegistrada();
+        if (solicitudes.stream()
+                .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
+            throw new SolicitudYaRealizada();
+
+        Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes);
+
+        if (socio.getEstadoCuota().equals(EstadoCuota.PAGADA)) {
+            asignarPlaza(nuevaSolicitud);
         }
 
-        Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes, this);
-
-        nuevaSolicitud.evaluarEstado();
-
         agregarSolicitud(nuevaSolicitud);
-        solicitudes.add(nuevaSolicitud);
+        socio.anadirSolicitud(nuevaSolicitud);
     }
 
     /**
@@ -135,20 +137,21 @@ public class Actividad {
      * @param solicitud solicitud en la que se van a asignar las plazas.
      */
     public void asignarPlazasFinal(Solicitud solicitud) {
+        if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
+            throw new FueraDePlazo();
+        }
+
         if (!hayPlaza())
             throw new NoHayPlazas();
 
-        for (Solicitud s: solicitudes) {
-            if (!s.getSolicitudId().equals(solicitud.getSolicitudId()))
-                throw new SolicitudNoExiste();
-        }
+        if (!solicitudes.contains(solicitud))
+            throw new SolicitudNoExiste();
 
         if (solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA)) {
             throw new ActividadYaRegistrada();
         }
 
         asignarPlaza(solicitud);
-        solicitud.evaluarEstado();
     }
 
     /**
@@ -160,25 +163,19 @@ public class Actividad {
      */
     public void asignarPlazasFinInscripcion() {
 
-        if (LocalDate.now().isBefore(fechaFinInscripcion))
+        if (estado() != EstadoActividad.ABIERTA)
             throw new FueraDePlazo();
 
         if (!hayPlaza())
             throw new NoHayPlazas();
 
-        for (Solicitud solicitud : solicitudes) {
-            if (solicitud.getEstadoSolicitud() == EstadoSolicitud.PARCIAL && hayPlaza()) {
-                asignarPlaza(solicitud);
-                solicitud.evaluarEstado();
-            }
-        }
+        solicitudes.stream()
+                .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
+                .forEach(solicitud -> asignarPlaza(solicitud));
 
-        for (Solicitud solicitud : solicitudes) {
-            if (!solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza()) {
-                asignarPlaza(solicitud);
-                solicitud.evaluarEstado();
-            }
-        }
+        solicitudes.stream()
+                .filter(s -> !s.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza())
+                .forEach(solicitud -> asignarPlaza(solicitud));
     }
 
     /**
