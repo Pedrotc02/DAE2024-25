@@ -13,8 +13,6 @@ public class Solicitud {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String solicitudId;
-    @NotBlank
-    private String socioId;
     @ManyToOne
     @JoinColumn(name = "socio_id")
     private Socio socio;
@@ -32,8 +30,7 @@ public class Solicitud {
 
     }
 
-    public Solicitud(String socioId, Socio socio, int numAcompanantes) {
-        this.socioId = socioId;
+    public Solicitud(Socio socio, int numAcompanantes) {
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
         //El id de la solicitud se crea en función del id del socio, el id de actividad y la fecha en la que se realiza
@@ -48,7 +45,7 @@ public class Solicitud {
     }
 
     private String generarSolicitudId() {
-        return this.socioId +"-"+ System.currentTimeMillis();
+        return this.socio.getSocioId() +"-"+ System.currentTimeMillis();
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -83,7 +80,7 @@ public class Solicitud {
 
     // Getters
     public String getSocioId() {
-        return socioId;
+        return socio.getSocioId();
     }
 
     public String getSolicitudId() {

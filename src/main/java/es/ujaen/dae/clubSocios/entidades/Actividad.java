@@ -35,7 +35,7 @@ public class Actividad {
     private LocalDate fechaCelebracion;
     private LocalDate fechaInicioInscripcion;
     private LocalDate fechaFinInscripcion;
-    @OneToMany
+    @OneToMany(mappedBy = "actividad")
     List<Solicitud> solicitudes;
 
     public Actividad() {
@@ -104,7 +104,7 @@ public class Actividad {
                        .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
             throw new SolicitudYaRealizada();
 
-        Solicitud nuevaSolicitud = new Solicitud(socio.getSocioId(), socio, numAcompanantes);
+        Solicitud nuevaSolicitud = new Solicitud(socio, numAcompanantes);
 
         if (socio.getEstadoCuota().equals(EstadoCuota.PAGADA)) {
             asignarPlaza(nuevaSolicitud);
