@@ -21,7 +21,7 @@ public class Actividad {
     @Positive
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
     @NotBlank
     private String titulo;
     @NotBlank
@@ -35,14 +35,14 @@ public class Actividad {
     private LocalDate fechaCelebracion;
     private LocalDate fechaInicioInscripcion;
     private LocalDate fechaFinInscripcion;
-    @OneToMany(mappedBy = "actividad")
+    @OneToMany
     List<Solicitud> solicitudes;
 
     public Actividad() {
         this.solicitudes = new ArrayList<>();
     }
 
-    public Actividad(String id, String titulo, String descripcion, double precio,
+    public Actividad(Long id, String titulo, String descripcion, double precio,
                      int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
 
         this.id = id;
@@ -219,7 +219,7 @@ public class Actividad {
     }
 
     // Getters
-    public String getId() {
+    public Long getId() {
         return id;
     }
 

@@ -15,18 +15,18 @@ import java.util.TreeMap;
 public class Temporada {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String temporadaId;
+    private Long temporadaId;
     @Min(2000)
     @Max(9999)
     private int anio;
     @OneToMany
-    private SortedMap<String, Actividad> actividades;
+    private SortedMap<Long, Actividad> actividades;
 
     public Temporada(){
 
     }
 
-    public Temporada(String temporadaId, int anio) {
+    public Temporada(Long temporadaId, int anio) {
         this.temporadaId = temporadaId;
         this.anio = anio;
         this.actividades = new TreeMap<>();
@@ -36,12 +36,12 @@ public class Temporada {
         actividades.put(actividad.getId(), actividad);
     }
 
-    public SortedMap<String, Actividad> obtenerActividades() {
+    public SortedMap<Long, Actividad> obtenerActividades() {
         return new TreeMap<>(actividades);
     }
 
     // Getters
-    public String getTemporadaId() {
+    public Long getTemporadaId() {
         return temporadaId;
     }
 

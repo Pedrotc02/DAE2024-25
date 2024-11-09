@@ -12,9 +12,9 @@ import java.time.LocalDate;
 public class Solicitud {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String solicitudId;
+    private Long solicitudId;
     @ManyToOne
-    @JoinColumn(name = "socio_id")
+    @JoinColumn(name = "socioId")
     private Socio socio;
     @Min(0) @Max(5)
     private int numAcompanantes;
@@ -44,8 +44,8 @@ public class Solicitud {
 
     }
 
-    private String generarSolicitudId() {
-        return this.socio.getSocioId() +"-"+ System.currentTimeMillis();
+    private Long generarSolicitudId() {
+        return Long.parseLong(this.socio.getSocioId() + System.currentTimeMillis());
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -83,7 +83,7 @@ public class Solicitud {
         return socio.getSocioId();
     }
 
-    public String getSolicitudId() {
+    public Long getSolicitudId() {
         return solicitudId;
     }
 

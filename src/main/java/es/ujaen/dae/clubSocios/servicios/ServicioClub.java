@@ -16,7 +16,7 @@ import java.util.*;
 @Validated
 public class ServicioClub {
     Map<String, Socio> socios;
-    Map<String, Actividad> actividades;
+    Map<Long, Actividad> actividades;
 
     private static final Socio direccion = new Socio("direccion@clubsocios.es", "direccion", "-", "99999999Z","953897654", "serviceSecret", EstadoCuota.PAGADA);
 
@@ -138,7 +138,7 @@ public class ServicioClub {
         }
     }
 
-    public Map<String, Actividad> actividades(){
+    public Map<Long, Actividad> actividades(){
         return actividades;
     }
 
