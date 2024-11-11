@@ -70,8 +70,8 @@ public class ServicioClub {
      * @param socio socio que quiere hacer la solicitud en la actividad.
      * @param actividadId identificador de la actividad en la que se meterá la solicitud.
      */
-    public void registrarSolicitud(@Valid Socio socio, int actividadId, int numAcom) {
-        if (direccion.getSocioId().equals(socio.getSocioId()) && direccion.getClaveAcceso().equals(socio.getClaveAcceso())){
+    public void registrarSolicitud(Socio dir, @Valid Socio socio, int actividadId, int numAcom) {
+        if (direccion.getSocioId().equals(dir.getSocioId()) && direccion.getClaveAcceso().equals(dir.getClaveAcceso())){
             Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
 
             if(actividadOptional.isPresent()){

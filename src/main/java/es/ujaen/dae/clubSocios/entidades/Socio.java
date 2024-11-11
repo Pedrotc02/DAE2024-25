@@ -57,10 +57,10 @@ public class Socio {
         solicitudes = new ArrayList<>();
     }
 
-    public void modificarSolicitud(String solicitudId, int numAcompanantes) {
+    public void modificarSolicitud(int solicitudId, int numAcompanantes) {
         boolean flag = false;
         for (Solicitud solicitud : solicitudes) {
-            if (solicitud.getSolicitudId().equals(solicitudId)) {
+            if (solicitud.getSolicitudId() == solicitudId) {
                 solicitud.modificarNumAcompanantes(numAcompanantes);
                 flag = true;
                 break;
@@ -72,12 +72,12 @@ public class Socio {
         }
     }
 
-    public void borrarSolicitud(String solicitudId) {
+    public void borrarSolicitud(int solicitudId) {
         boolean flag = false;
         Iterator<Solicitud> iterator = solicitudes.iterator();
         while (iterator.hasNext()) {
             Solicitud solicitud = iterator.next();
-            if (solicitud.getSolicitudId().equals(solicitudId)) {
+            if (solicitud.getSolicitudId() == solicitudId) {
                 iterator.remove();
                 flag = true;
                 break;

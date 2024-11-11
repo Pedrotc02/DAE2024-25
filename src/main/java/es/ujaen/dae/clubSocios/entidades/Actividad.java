@@ -5,7 +5,6 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
-import es.ujaen.dae.clubSocios.util.UtilList;
 import jakarta.persistence.*;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import jakarta.validation.constraints.*;
@@ -21,7 +20,7 @@ public class Actividad {
     @Positive
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
     @NotBlank
     private String titulo;
     @NotBlank
@@ -42,10 +41,8 @@ public class Actividad {
         this.solicitudes = new ArrayList<>();
     }
 
-    public Actividad(Long id, String titulo, String descripcion, double precio,
+    public Actividad(String titulo, String descripcion, double precio,
                      int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
-
-        this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.precio = precio;
@@ -219,7 +216,7 @@ public class Actividad {
     }
 
     // Getters
-    public Long getId() {
+    public int getId() {
         return id;
     }
 

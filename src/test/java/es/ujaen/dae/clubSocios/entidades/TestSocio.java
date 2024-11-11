@@ -39,7 +39,7 @@ public class TestSocio {
     @DirtiesContext
     void testModificarSolicitud(){
         var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
-        var actividad = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        var actividad = new Actividad("Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
         actividad.solicitarInscripcion(socio1, 1);
         actividad.getSolicitudes().stream()
@@ -55,7 +55,7 @@ public class TestSocio {
         var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
         var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        var actividad = new Actividad("1", "Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        var actividad = new Actividad("Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
         actividad.solicitarInscripcion(socio1, 4);
         actividad.solicitarInscripcion(socio2, 4);

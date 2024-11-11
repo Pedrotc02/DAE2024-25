@@ -4,7 +4,6 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 
@@ -12,7 +11,7 @@ import java.time.LocalDate;
 public class Solicitud {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long solicitudId;
+    private int solicitudId;
     @ManyToOne
     @JoinColumn(name = "socioId")
     private Socio socio;
@@ -44,8 +43,8 @@ public class Solicitud {
 
     }
 
-    private Long generarSolicitudId() {
-        return Long.parseLong(this.socio.getSocioId() + System.currentTimeMillis());
+    private int generarSolicitudId() {
+        return Integer.parseInt(this.socio.getSocioId() + System.currentTimeMillis());
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -83,7 +82,7 @@ public class Solicitud {
         return socio.getSocioId();
     }
 
-    public Long getSolicitudId() {
+    public int getSolicitudId() {
         return solicitudId;
     }
 
