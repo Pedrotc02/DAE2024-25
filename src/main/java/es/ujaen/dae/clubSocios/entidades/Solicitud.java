@@ -16,17 +16,18 @@ public class Solicitud {
     @ManyToOne
     @JoinColumn(name = "socioId")
     private Socio socio;
-    @Min(0) @Max(5)
+    @Min(0)
+    @Max(5)
     private int numAcompanantes;
     @NotNull
     private EstadoSolicitud estadoSolicitud;
     @PastOrPresent
     private LocalDate fechaSolicitud;
-
-    @Min(0) @Max(6)
+    @Min(0)
+    @Max(6)
     private int plazasConcedidas;
 
-    public Solicitud(){
+    public Solicitud() {
 
     }
 
@@ -41,7 +42,6 @@ public class Solicitud {
         this.fechaSolicitud = LocalDate.now();
         //Al crear la solicitud de por sí no se concede ninguna plaza, de eso se encarga la propia dirección
         this.plazasConcedidas = 0;
-
     }
 
     private Long generarSolicitudId() {
@@ -63,8 +63,8 @@ public class Solicitud {
      * Asigna el estado que le corresponde a cada solicitud.
      * Para ello, comprueba si el socio ha pagado y si hay plaza en la actividad, en caso contrario la solicitud será Pendiente.
      * Si estas condiciones son ciertas, asigna el estado de la solicitud teniendo en cuenta que:
-     *      si el número total de plazas de la solicitud (acompañantes + socio) es mayor que 1 y
-     *      si no se han concedido todas las plazas de la solicitud
+     * si el número total de plazas de la solicitud (acompañantes + socio) es mayor que 1 y
+     * si no se han concedido todas las plazas de la solicitud
      * La solicitud será Parcial en este caso, y Cerrada en caso contrario.
      */
     public void evaluarEstado(Actividad actividad) {
@@ -74,7 +74,7 @@ public class Solicitud {
         } else {
             this.estadoSolicitud = totalPlazas > 1 &&
                     plazasConcedidas >= 1 &&
-                    plazasConcedidas <= totalPlazas  ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
+                    plazasConcedidas <= totalPlazas ? EstadoSolicitud.PARCIAL : EstadoSolicitud.CERRADA;
         }
     }
 

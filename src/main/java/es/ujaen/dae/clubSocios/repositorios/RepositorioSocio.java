@@ -29,7 +29,6 @@ public class RepositorioSocio {
         em.persist(socio);
     }
 
-
     @Cacheable("socios")
     public Socio actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
         Optional<Socio> socioOptional = buscarPorId(email);
@@ -39,15 +38,14 @@ public class RepositorioSocio {
             socio.setEstadoCuota(estadoCuota);
 
             return em.merge(socio);
-        }else{
+        } else {
             throw new NoSuchElementException();
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<String> listadoIds(){
+    public List<String> listadoIds() {
         return em.createQuery("select s.socioId from Socio s").getResultList();
-
     }
 
 }
