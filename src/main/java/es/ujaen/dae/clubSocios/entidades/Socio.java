@@ -41,6 +41,10 @@ public class Socio {
     @OneToMany(mappedBy = "socio", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<Solicitud> solicitudes;
 
+    //Habilitar versión para bloqueo optimista orientado al futuro
+//    @Version
+//    int version;
+
     public Socio(){
 
     }

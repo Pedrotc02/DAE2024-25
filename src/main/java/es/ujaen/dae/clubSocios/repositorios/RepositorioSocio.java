@@ -2,9 +2,11 @@ package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,21 @@ public class RepositorioSocio {
     }
 
     public void guardarSocio(Socio socio) {
-        em.persist(socio);
+        try {
+            em.persist(socio);
+            em.flush();
+        } catch (DuplicateKeyException duplicateKeyException) {
+            throw new SocioYaRegistrado();
+        }
+
+    }
+
+    public Socio actualizar(Socio socio) {
+        return em.merge(socio);
+    }
+
+    public void eliminar(Socio socio) {
+        em.remove(em.merge(socio));
     }
 
     @Cacheable("socios")

@@ -38,14 +38,18 @@ public class Actividad {
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<Solicitud> solicitudes;
 
+    //Habilitar versión para bloqueo optimista orientado al futuro
+//    @Version
+//    int version;
+
     public Actividad() {
         this.solicitudes = new ArrayList<>();
     }
 
-    public Actividad(Long id, String titulo, String descripcion, double precio,
+    public Actividad(String titulo, String descripcion, double precio,
                      int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
 
-        this.id = id;
+        this.id = 0L;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.precio = precio;
@@ -225,6 +229,34 @@ public class Actividad {
 
     public int getPlazasDisponibles() {
         return plazasDisponibles;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public double getPrecio() {
+        return precio;
+    }
+
+    public int getTotalPlazas() {
+        return totalPlazas;
+    }
+
+    public LocalDate getFechaCelebracion() {
+        return fechaCelebracion;
+    }
+
+    public LocalDate getFechaInicioInscripcion() {
+        return fechaInicioInscripcion;
+    }
+
+    public LocalDate getFechaFinInscripcion() {
+        return fechaFinInscripcion;
     }
 
     public List<Solicitud> getSolicitudes() {

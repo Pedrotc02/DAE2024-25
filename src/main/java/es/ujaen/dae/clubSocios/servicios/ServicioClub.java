@@ -63,11 +63,10 @@ public class ServicioClub {
     }
 
     public void crearActividad(@Valid Socio socio, @Valid Actividad actividad) {
-        if (direccion.getSocioId().equals(socio.getSocioId()) && direccion.getClaveAcceso().equals(socio.getClaveAcceso())) {
-            repositorioActividad.guardarActividad(actividad);
-        } else {
+        if (!direccion.getSocioId().equals(socio.getSocioId()) && !direccion.getClaveAcceso().equals(socio.getClaveAcceso()))
             throw new OperacionDeDireccion();
-        }
+
+        repositorioActividad.guardarActividad(actividad);
     }
 
     /**

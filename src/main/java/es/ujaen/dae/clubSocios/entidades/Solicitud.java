@@ -32,6 +32,7 @@ public class Solicitud {
     }
 
     public Solicitud(Socio socio, int numAcompanantes) {
+        this.solicitudId = generarSolicitudId();
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
         //Todas las solicitudes se crean con un estado pendiente

@@ -2,6 +2,7 @@ package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
+import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FechaNoValida;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -11,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +34,20 @@ public class RepositorioActividad {
     }
 
     public void guardarActividad(Actividad actividad) {
-        em.persist(actividad);
+        try {
+            em.persist(actividad);
+            em.flush();
+        } catch (DuplicateKeyException duplicateKeyException) {
+            throw new ActividadYaRegistrada();
+        }
+    }
+
+    public Actividad actualizar(Actividad actividad) {
+        return em.merge(actividad);
+    }
+
+    public void eliminar(Actividad actividad) {
+        em.remove(em.merge(actividad));
     }
 
     // listadoIDs
