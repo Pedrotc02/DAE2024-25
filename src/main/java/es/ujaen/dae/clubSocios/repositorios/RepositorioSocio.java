@@ -48,4 +48,8 @@ public class RepositorioSocio {
         return em.createQuery("select s.socioId from Socio s").getResultList();
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Socio> listadoSocios() {
+        return em.createQuery("select s from Socio s", Socio.class).getResultList();
+    }
 }

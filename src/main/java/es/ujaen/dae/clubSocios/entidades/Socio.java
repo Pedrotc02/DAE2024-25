@@ -57,7 +57,7 @@ public class Socio {
         solicitudes = new ArrayList<>();
     }
 
-    public void modificarSolicitud(String solicitudId, int numAcompanantes) {
+    public void modificarSolicitud(Long solicitudId, int numAcompanantes) {
         boolean flag = false;
         for (Solicitud solicitud : solicitudes) {
             if (solicitud.getSolicitudId().equals(solicitudId)) {
@@ -72,7 +72,7 @@ public class Socio {
         }
     }
 
-    public void borrarSolicitud(String solicitudId) {
+    public void borrarSolicitud(Long solicitudId) {
         boolean flag = false;
         Iterator<Solicitud> iterator = solicitudes.iterator();
         while (iterator.hasNext()) {

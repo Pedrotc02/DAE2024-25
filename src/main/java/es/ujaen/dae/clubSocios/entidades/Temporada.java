@@ -7,8 +7,6 @@ import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 @Entity
 public class Temporada {

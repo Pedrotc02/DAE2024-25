@@ -34,8 +34,6 @@ public class Solicitud {
     public Solicitud(Socio socio, int numAcompanantes) {
         this.socio = socio;
         this.numAcompanantes = numAcompanantes;
-        //El id de la solicitud se crea en función del id del socio, el id de actividad y la fecha en la que se realiza
-        this.solicitudId = generarSolicitudId();
         //Todas las solicitudes se crean con un estado pendiente
         this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
         //La solicitud se crea a fecha actual del sistema

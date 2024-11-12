@@ -27,7 +27,7 @@ public class RepositorioActividad {
 
     @Cacheable("actividades")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public Optional<Actividad> buscarPorId(int id) {
+    public Optional<Actividad> buscarPorId(Long id) {
         return Optional.ofNullable(em.find(Actividad.class, id));
     }
 
@@ -35,6 +35,15 @@ public class RepositorioActividad {
         em.persist(actividad);
     }
 
+    // listadoIDs
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Long> listadoIds() {
+        return em.createQuery("select a.id from Actividad a").getResultList();
+    }
 
-
+    // listadoActividades
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Actividad> listadoActividades() {
+        return em.createQuery("select a from Actividad a", Actividad.class).getResultList();
+    }
 }
