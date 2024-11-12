@@ -35,8 +35,8 @@ public class Actividad {
     private LocalDate fechaCelebracion;
     private LocalDate fechaInicioInscripcion;
     private LocalDate fechaFinInscripcion;
-    @OneToMany
-    List<Solicitud> solicitudes;
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Solicitud> solicitudes;
 
     public Actividad() {
         this.solicitudes = new ArrayList<>();

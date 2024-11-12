@@ -38,8 +38,8 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-    @OneToMany(mappedBy = "socio")
-    List<Solicitud> solicitudes;
+    @OneToMany(mappedBy = "socio", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Solicitud> solicitudes;
 
     public Socio(){
 

@@ -20,7 +20,7 @@ public class Temporada {
     @Max(9999)
     private int anio;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     @OrderBy("id ASC") // Orden ascendente por ID
     private List<Actividad> actividades;
 
