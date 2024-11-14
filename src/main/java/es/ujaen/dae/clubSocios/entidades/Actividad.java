@@ -96,17 +96,18 @@ public class Actividad {
      * @param socio socio que realiza la solicitud en la actividad
      * @param numAcompanantes numero de acompañantes que llevará el socio
      */
-    public void solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
+    public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
         if (!estaEnPeriodoInscripcion()) {
             throw new FueraDePlazo();
         }
 
-        if (!hayPlaza())
+        if (!hayPlaza()) {
             throw new NoHayPlazas();
+        }
 
-        if (solicitudes.stream()
-                       .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
+        if (solicitudes.stream().anyMatch(s -> s.getSocioId().equals(socio.getSocioId()))) {
             throw new SolicitudYaRealizada();
+        }
 
         Solicitud nuevaSolicitud = new Solicitud(socio, numAcompanantes);
 
@@ -115,7 +116,9 @@ public class Actividad {
         }
 
         agregarSolicitud(nuevaSolicitud);
-        socio.anadirSolicitud(nuevaSolicitud);
+
+        // Devolver la nueva solicitud para que sea persistida en el servicio
+        return nuevaSolicitud;
     }
 
     /**

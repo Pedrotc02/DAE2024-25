@@ -7,6 +7,7 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioActividad;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioSocio;
+import es.ujaen.dae.clubSocios.repositorios.RepositorioSolicitud;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
+
+import static es.ujaen.dae.clubSocios.util.UtilList.EJEMPLO_SOCIO;
 
 @Service
 @Validated
@@ -24,8 +27,8 @@ public class ServicioClub {
     @Autowired
     RepositorioActividad repositorioActividad;
 
-    private static final Socio direccion = new Socio("direccion@clubsocios.es", "direccion",
-            "-", "99999999Z", "953897654", "serviceSecret", EstadoCuota.PAGADA);
+    @Autowired
+    RepositorioSolicitud repositorioSolicitud;
 
     public ServicioClub() {
 
@@ -47,8 +50,8 @@ public class ServicioClub {
     }
 
     public Optional<Socio> login(@Email String email, String clave) {
-        if (direccion.getSocioId().equals(email) && direccion.getClaveAcceso().equals(clave))
-            return Optional.of(direccion);
+        if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
+            return Optional.of(EJEMPLO_SOCIO);
 
         return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
     }
@@ -63,7 +66,7 @@ public class ServicioClub {
     }
 
     public void crearActividad(@Valid Socio socio, @Valid Actividad actividad) {
-        if (!direccion.getSocioId().equals(socio.getSocioId()) && !direccion.getClaveAcceso().equals(socio.getClaveAcceso()))
+        if (!EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && !EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso()))
             throw new OperacionDeDireccion();
 
         repositorioActividad.guardarActividad(actividad);
@@ -79,17 +82,24 @@ public class ServicioClub {
      * @param actividadId identificador de la actividad en la que se meterá la solicitud.
      */
     public void registrarSolicitud(@Valid Socio socio, Long actividadId, int numAcom) {
-        if (direccion.getSocioId().equals(socio.getSocioId()) && direccion.getClaveAcceso().equals(socio.getClaveAcceso())) {
+        if (EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso())) {
+
             Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
 
             if (actividadOptional.isPresent()) {
                 Actividad actividad = actividadOptional.get();
-                actividad.solicitarInscripcion(socio, numAcom);
+                
+                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
+
+                repositorioActividad.guardarActividad(actividad);
+                repositorioSolicitud.guardarSolicitud(nuevaSolicitud);
+
+            } else {
+                throw new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe.");
             }
         } else {
             throw new OperacionDeDireccion();
         }
-
     }
 
     /**
@@ -99,7 +109,7 @@ public class ServicioClub {
      * @return lista de solicitudes de la actividad cuyo id ha sido dado
      */
     public List<Solicitud> revisarSolicitudes(@Valid Socio socio, Long actividadId) {
-        if (direccion.getSocioId().equals(socio.getSocioId()) && direccion.getClaveAcceso().equals(socio.getClaveAcceso())) {
+        if (EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso())) {
             Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
 
             if (actividadOptional.isPresent()) {
@@ -123,7 +133,7 @@ public class ServicioClub {
      * @param solicitud   solicitud a la que la dirección va a asignar la plaza, si se puede.
      */
     public void asignarPlazasFinal(@Valid Socio socio, Long actividadId, @Valid Solicitud solicitud) {
-        if (direccion.getSocioId().equals(socio.getSocioId()) && direccion.getClaveAcceso().equals(socio.getClaveAcceso())) {
+        if (EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso())) {
             Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
 
             if (actividadOptional.isPresent()) {
@@ -136,7 +146,7 @@ public class ServicioClub {
     }
 
     public void asignarPlazasFinInscripcion(@Valid Socio socio, Long actividadId) {
-        if (direccion.getSocioId().equals(socio.getSocioId()) && direccion.getClaveAcceso().equals(socio.getClaveAcceso())) {
+        if (EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso())) {
             Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
 
             if (actividadOptional.isPresent()) {
