@@ -3,11 +3,13 @@ package es.ujaen.dae.clubSocios.servicios;
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
+import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioActividad;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioSocio;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioSolicitud;
+import es.ujaen.dae.clubSocios.repositorios.RepositorioTemporada;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,9 @@ public class ServicioClub {
     @Autowired
     RepositorioSolicitud repositorioSolicitud;
 
+    @Autowired
+    RepositorioTemporada repositorioTemporada;
+
     public ServicioClub() {
 
     }
@@ -42,11 +47,33 @@ public class ServicioClub {
         return repositorioActividad.listadoActividades();
     }
 
-    public void crearSocio(@Valid Socio socio) {
+    public List<Temporada> temporadas() {
+        return repositorioTemporada.listadoTemporadas();
+    }
+
+    public List<Solicitud> solicitudes() {
+        return repositorioSolicitud.listadoSolicitudes();
+    }
+
+    public Optional<Temporada> buscarTemporada(Long id) {
+        return repositorioTemporada.buscarPorId(id);
+    }
+
+    public Socio crearSocio(@Valid Socio socio) {
         if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
             throw new SocioYaRegistrado();
         }
         repositorioSocio.guardarSocio(socio);
+        return socio;
+    }
+
+    public Temporada crearTemporada(@Valid Temporada temporada) {
+        Long temporadaId = temporada.getTemporadaId();
+        if (repositorioTemporada.buscarPorId(temporadaId).isPresent()) {
+            throw new TemporadaYaRegistrada("Temporada con ID " + temporadaId + " no existe.");
+        }
+        repositorioTemporada.guardarTemporada(temporada);
+        return temporada;
     }
 
     public Optional<Socio> login(@Email String email, String clave) {
@@ -65,11 +92,21 @@ public class ServicioClub {
         repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
     }
 
-    public void crearActividad(@Valid Socio socio, @Valid Actividad actividad) {
-        if (!EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && !EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso()))
-            throw new OperacionDeDireccion();
+    public Actividad crearActividad(Long temporadaId, Actividad actividad) {
+        Optional<Temporada> temporadaOptional = repositorioTemporada.buscarPorId(temporadaId);
+
+        if (temporadaOptional.isEmpty()) {
+            throw new TemporadaNoEncontrada("Temporada con ID " + temporadaId + " no existe.");
+        }
+
+        Temporada temporada = temporadaOptional.get();
+        temporada.aniadirActividad(actividad);
+        actividad.setTemporada(temporada);
 
         repositorioActividad.guardarActividad(actividad);
+        repositorioTemporada.actualizar(temporada);
+
+        return actividad;
     }
 
     /**
@@ -88,7 +125,7 @@ public class ServicioClub {
 
             if (actividadOptional.isPresent()) {
                 Actividad actividad = actividadOptional.get();
-                
+
                 Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
 
                 repositorioActividad.guardarActividad(actividad);

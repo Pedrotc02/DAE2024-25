@@ -2,10 +2,12 @@ package clubSocios.servicios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
+import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.OperacionDeDireccion;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
+import es.ujaen.dae.clubSocios.excepciones.TemporadaNoEncontrada;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
@@ -27,20 +30,44 @@ public class TestServicioClub {
 
     @Test
     @DirtiesContext
+    void testNuevaTemporada() {
+        var temporada = new Temporada(2024);
+        servicio.crearTemporada(temporada);
+
+        assertThat(servicio.temporadas().size()).isEqualTo(1);
+        assertThat(servicio.actividades().size()).isEqualTo(0);
+        assertThat(servicio.socios().size()).isEqualTo(0);
+    }
+
+    @Test
+    @DirtiesContext
+    void testBuscarTemporada() {
+        var temporada = new Temporada();
+        servicio.crearTemporada(temporada);
+
+
+        Optional<Temporada> temporadaOptional = servicio.buscarTemporada(temporada.getTemporadaId());
+        assertThat(temporadaOptional.isPresent()).isTrue();
+        assertThat(temporadaOptional.get()).isEqualTo(temporada);
+    }
+
+    @Test
+    @DirtiesContext
     void testOperacionDireccion() {
+        var temporada = new Temporada(2024);
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         var socio2 = new Socio("edu@gmail.com", "Edu", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
 
         assertThatThrownBy(() -> servicio.crearSocio(socio1)).isInstanceOf(OperacionDeDireccion.class);
 
-        var actividad = new Actividad(1L, "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        assertThatThrownBy(() -> servicio.crearActividad(socio1, actividad)).isInstanceOf(OperacionDeDireccion.class);
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        assertThatThrownBy(() -> servicio.crearActividad(temporada.getTemporadaId(), actividad)).isInstanceOf(OperacionDeDireccion.class);
     }
 
     @Test
     @DirtiesContext
-    void testNuevoSocio(){
+    void testNuevoSocio() {
         // Verifica que el correo no tiene el formato correcto y lanza una ConstraintViolationException
         var socio = new Socio("pruebagmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "123456789", "contraseña", EstadoCuota.PAGADA);
         assertThatThrownBy(() -> servicio.crearSocio(socio)).isInstanceOf(ConstraintViolationException.class);
@@ -62,14 +89,15 @@ public class TestServicioClub {
 
     @Test
     @DirtiesContext
-    void testNuevaActividad(){
+    void testNuevaActividad() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var temporada = servicio.crearTemporada(new Temporada(2024));
 
-        var actividad = new Actividad(1L, "Visita a museo", "Descricion", -10, -15, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        assertThatThrownBy(() -> servicio.crearActividad(direccion, actividad)).isInstanceOf(ConstraintViolationException.class);
+        var actividad = new Actividad("Visita a museo", "Descricion", -10, -15, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        assertThatThrownBy(() -> servicio.crearActividad(temporada.getTemporadaId(), actividad)).isInstanceOf(TemporadaNoEncontrada.class);
 
-        var actividad2 = new Actividad(1L, "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        servicio.crearActividad(direccion, actividad2);
+        var actividad2 = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        servicio.crearActividad(temporada.getTemporadaId(), actividad2);
 
         assertThat(servicio.actividades().size()).isEqualTo(1);
     }
@@ -77,11 +105,12 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testRegistrarSolicitud() {
+        var temporada = new Temporada(2024);
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        var actividad = new Actividad(1L, "Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
-        servicio.crearActividad(direccion, actividad);
+        servicio.crearActividad(temporada.getTemporadaId(), actividad);
         servicio.crearSocio(socio1);
         servicio.registrarSolicitud(socio1, actividad.getId(), 4);
 
@@ -119,7 +148,7 @@ public class TestServicioClub {
 
     @Test
     @DirtiesContext
-    void testResetearEstadoCuota(){
+    void testResetearEstadoCuota() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);

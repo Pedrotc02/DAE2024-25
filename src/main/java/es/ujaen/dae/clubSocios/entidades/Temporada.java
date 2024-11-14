@@ -26,8 +26,7 @@ public class Temporada {
         this.actividades = new ArrayList<>();
     }
 
-    public Temporada(Long temporadaId, int anio) {
-        this.temporadaId = temporadaId;
+    public Temporada(int anio) {
         this.anio = anio;
         this.actividades = new ArrayList<>();
     }

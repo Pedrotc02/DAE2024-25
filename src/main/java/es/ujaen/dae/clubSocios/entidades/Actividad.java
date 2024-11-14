@@ -37,6 +37,10 @@ public class Actividad {
     private LocalDate fechaFinInscripcion;
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<Solicitud> solicitudes;
+    // Relación con Temporada
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "temporada_id")
+    private Temporada temporada;
 
     //Habilitar versión para bloqueo optimista orientado al futuro
 //    @Version
@@ -272,6 +276,14 @@ public class Actividad {
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
+    }
+
+    public Temporada getTemporada() {
+        return temporada;
+    }
+
+    public void setTemporada(Temporada temporada) {
+        this.temporada = temporada;
     }
 }
 
