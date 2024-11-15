@@ -21,7 +21,6 @@ public class RepositorioSocio {
     @PersistenceContext
     EntityManager em;
 
-    @Cacheable("socios")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Socio> buscarPorId(String id) {
         return Optional.ofNullable(em.find(Socio.class, id));
@@ -45,7 +44,6 @@ public class RepositorioSocio {
         em.remove(em.merge(socio));
     }
 
-    @Cacheable("socios")
     public Socio actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
         Optional<Socio> socioOptional = buscarPorId(email);
 

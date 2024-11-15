@@ -27,7 +27,6 @@ public class RepositorioActividad {
     @PersistenceContext
     EntityManager em;
 
-    @Cacheable("actividades")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Actividad> buscarPorId(Long id) {
         return Optional.ofNullable(em.find(Actividad.class, id));

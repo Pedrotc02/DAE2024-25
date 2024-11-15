@@ -23,7 +23,6 @@ public class RepositorioSolicitud {
      * @param id el ID de la solicitud a buscar
      * @return Optional con la solicitud encontrada o vacío si no se encuentra
      */
-    @Cacheable("solicitudes")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Solicitud> buscarPorId(Long id) {
         return Optional.ofNullable(em.find(Solicitud.class, id));

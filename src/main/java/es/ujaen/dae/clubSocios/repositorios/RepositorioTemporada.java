@@ -25,7 +25,6 @@ public class RepositorioTemporada {
      * @param id el ID de la temporada a buscar
      * @return Optional con la temporada encontrada o vacío si no se encuentra
      */
-    @Cacheable("temporadas")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Temporada> buscarPorId(Long id) {
         return Optional.ofNullable(em.find(Temporada.class, id));
