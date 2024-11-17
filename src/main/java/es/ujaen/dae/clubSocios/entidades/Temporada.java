@@ -47,10 +47,4 @@ public class Temporada {
     public int getAnio() {
         return anio;
     }
-
-    public void setAnio(int anio){
-        if (anio > LocalDate.EPOCH.getYear())
-            throw new InvalidoAnio();
-        this.anio = anio;
-    }
 }

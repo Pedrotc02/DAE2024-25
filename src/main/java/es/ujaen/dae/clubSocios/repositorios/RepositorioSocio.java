@@ -5,7 +5,6 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,10 +25,9 @@ public class RepositorioSocio {
         return Optional.ofNullable(em.find(Socio.class, id));
     }
 
-    public void guardarSocio(Socio socio) {
+    public void crear(Socio socio) {
         try {
             em.persist(socio);
-            em.flush();
         } catch (DuplicateKeyException duplicateKeyException) {
             throw new SocioYaRegistrado();
         }
@@ -65,5 +63,9 @@ public class RepositorioSocio {
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Socio> listadoSocios() {
         return em.createQuery("select s from Socio s", Socio.class).getResultList();
+    }
+
+    public void save() {
+        em.flush();
     }
 }

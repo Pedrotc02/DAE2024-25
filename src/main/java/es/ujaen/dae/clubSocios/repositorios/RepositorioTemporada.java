@@ -2,9 +2,14 @@ package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Temporada;
+import es.ujaen.dae.clubSocios.excepciones.TemporadaYaRegistrada;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,14 +35,24 @@ public class RepositorioTemporada {
         return Optional.ofNullable(em.find(Temporada.class, id));
     }
 
+    private Temporada buscarPorAnio(int anio) {
+        return em.createQuery("select t from Temporada t where t.anio =: anio", Temporada.class)
+                .setParameter("anio", anio)
+                .getSingleResult();
+    }
+
     /**
      * Guarda una nueva temporada en la base de datos.
      *
      * @param temporada la temporada a guardar
      */
-    public void guardarTemporada(Temporada temporada) {
-        em.persist(em.merge(temporada));
-        em.flush();
+    public void crear(Temporada temporada) {
+        //Si se encuentra una temporada con el mismo año, no la va a registrar otra vez, no tiene sentido.
+        if (em.createQuery("SELECT COUNT(t) FROM Temporada t WHERE t.anio = :anio", Long.class)
+                .setParameter("anio", temporada.getAnio())
+                .getSingleResult() > 0)
+                    throw new TemporadaYaRegistrada("Temporada con anio " + temporada.getAnio() + " ya registrada");
+        em.persist(temporada);
     }
 
     /**
@@ -82,5 +97,9 @@ public class RepositorioTemporada {
                         Actividad.class)
                 .setParameter("id", id)
                 .getResultList();
+    }
+
+    public void save() {
+        em.flush();
     }
 }

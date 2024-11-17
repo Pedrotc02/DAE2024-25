@@ -52,8 +52,7 @@ public class Actividad {
 
     public Actividad(String titulo, String descripcion, double precio,
                      int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
-
-        this.id = 0L;
+        
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.precio = precio;
