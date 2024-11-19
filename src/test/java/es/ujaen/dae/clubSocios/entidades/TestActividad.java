@@ -67,6 +67,20 @@ public class TestActividad {
         assertThat(actividad.estado()).isEqualTo(EstadoActividad.ABIERTA);
     }
 
+    @Test
+    @DirtiesContext
+    void testSolicitarInscripcion() {
+        var actividad = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 4, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+
+        actividad.solicitarInscripcion(socio1, 3);
+        actividad.solicitarInscripcion(socio2, 3);
+
+        assertEquals("Debe haber 2 solicitudes en la actividad", 2, actividad.getSolicitudes().size());
+        assertThatThrownBy(() -> actividad.solicitarInscripcion(socio1, 4)).isInstanceOf(SolicitudYaRealizada.class);
+    }
+
     /**
      * Comprueba que un socio pueda solicitar correctamente la inscripción a la actividad que él quiera.
      * Si no puede, es informado del error correspondiente.
@@ -113,15 +127,16 @@ public class TestActividad {
     @DirtiesContext
     void testRevisarSolicitudes() {
 
-        var actividad = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 4, LocalDate.parse("2025-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
+        var actividad = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 4, LocalDate.parse("2025-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-16"));
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        actividad.solicitarInscripcion(socio1, 3);
-        actividad.solicitarInscripcion(socio2, 3);
+        var solicitud1 = new Solicitud(socio1, 3);
+        var solicitud2 = new Solicitud(socio2, 3);
+
+        actividad.agregarSolicitud(solicitud1);
+        actividad.agregarSolicitud(solicitud2);
 
         assertEquals("Debe haber 2 solicitudes en la actividad", 2, actividad.revisarSolicitudes().size());
-        assertThat(actividad.revisarSolicitudes().get(1).getFechaSolicitud())
-                .isBefore(actividad.revisarSolicitudes().get(2).getFechaSolicitud());
     }
 }

@@ -17,7 +17,7 @@ public class TestSolicitud {
     @Test
     @DirtiesContext
     void testValidacionSolicitud() {
-        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com", "653398283", "pepifer", EstadoCuota.PENDIENTE);
+        var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "653398283", "pepifer", EstadoCuota.PENDIENTE);
         var actividad3 = new Actividad("Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
         var solicitud1 = new Solicitud(socio1, 4);
 

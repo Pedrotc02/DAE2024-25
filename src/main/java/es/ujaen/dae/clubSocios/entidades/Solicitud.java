@@ -3,17 +3,21 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Solicitud {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int solicitudId;
+    private String solicitudId;
     @ManyToOne
     @JoinColumn(name = "socioId")
+    @Valid
     private Socio socio;
     @Min(0)
     @Max(5)
@@ -21,7 +25,7 @@ public class Solicitud {
     @NotNull
     private EstadoSolicitud estadoSolicitud;
     @PastOrPresent
-    private LocalDate fechaSolicitud;
+    private LocalDateTime fechaSolicitud;
     @Min(0)
     @Max(6)
     private int plazasConcedidas;
@@ -31,19 +35,19 @@ public class Solicitud {
     }
 
     public Solicitud(Socio socio, int numAcompanantes) {
-        this.solicitudId = generarSolicitudId();
         this.socio = socio;
+        this.solicitudId = generarSolicitudId();
         this.numAcompanantes = numAcompanantes;
         //Todas las solicitudes se crean con un estado pendiente
         this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
         //La solicitud se crea a fecha actual del sistema
-        this.fechaSolicitud = LocalDate.now();
+        this.fechaSolicitud = LocalDateTime.now();
         //Al crear la solicitud de por sí no se concede ninguna plaza, de eso se encarga la propia dirección
         this.plazasConcedidas = 0;
     }
 
-    private int generarSolicitudId() {
-        return Integer.parseInt(this.socio.getSocioId() + System.currentTimeMillis());
+    private String generarSolicitudId() {
+        return this.socio.getSocioId() + System.currentTimeMillis();
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -81,7 +85,7 @@ public class Solicitud {
         return socio.getSocioId();
     }
 
-    public int getSolicitudId() {
+    public String getSolicitudId() {
         return solicitudId;
     }
 
@@ -93,11 +97,11 @@ public class Solicitud {
         return numAcompanantes;
     }
 
-    public LocalDate getFechaSolicitud() {
+    public LocalDateTime getFechaSolicitud() {
         return fechaSolicitud;
     }
 
-    public void setFechaSolicitud(LocalDate fechaSolicitud) {
+    public void setFechaSolicitud(LocalDateTime fechaSolicitud) {
         this.fechaSolicitud = fechaSolicitud;
     }
 

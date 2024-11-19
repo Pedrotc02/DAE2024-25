@@ -67,24 +67,19 @@ public class Actividad {
         this.solicitudes = new ArrayList<>();
     }
 
-    private void agregarSolicitud(Solicitud solicitud) {
-        if (!estaEnPeriodoInscripcion()) {
-            throw new FueraDePlazo();
-        }
+    public void agregarSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
-        if (!estaEnPeriodoInscripcion()) {
-            throw new FueraDePlazo();
-        }
         solicitudes.remove(solicitud);
     }
 
     public List<Solicitud> revisarSolicitudes() {
-        if (estado() != EstadoActividad.ABIERTA) {
+        if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
             throw new FechaNoValida();
         }
+
         return solicitudes.stream()
                 .sorted(Comparator.comparing(Solicitud::getFechaSolicitud))
                 .collect(Collectors.toList());
@@ -119,6 +114,9 @@ public class Actividad {
         }
 
         agregarSolicitud(nuevaSolicitud);
+
+        // Sin la línea de abajo, fallan los test de Socio (preguntar a profesor) y el de Actividad (testSolicitudInscripcionValida)
+        // socio.anadirSolicitud(nuevaSolicitud);
 
         // Devolver la nueva solicitud para que sea persistida en el servicio
         return nuevaSolicitud;

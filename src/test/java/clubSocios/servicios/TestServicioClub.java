@@ -78,7 +78,7 @@ public class TestServicioClub {
         // Verifica que el intento de agregar el mismo socio lanza una excepción SocioYaRegistrado
         assertThatThrownBy(() -> servicio.crearSocio(socio2)).isInstanceOf(SocioYaRegistrado.class);
 
-        var socio3 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "33333333M", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio3 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "33333333M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio3);
 
         // Verifica que el sistema contiene ahora dos socios registrados
