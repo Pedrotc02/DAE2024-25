@@ -35,7 +35,7 @@ public class Actividad {
     private LocalDate fechaCelebracion;
     private LocalDate fechaInicioInscripcion;
     private LocalDate fechaFinInscripcion;
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<Solicitud> solicitudes;
     // Relación con Temporada
     @ManyToOne(fetch = FetchType.LAZY)

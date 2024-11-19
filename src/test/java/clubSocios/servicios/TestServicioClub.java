@@ -2,6 +2,7 @@ package clubSocios.servicios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;
+import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.*;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -21,6 +23,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class)
+@ActiveProfiles("test")
 public class TestServicioClub {
     @Autowired
     ServicioClub servicio;
@@ -187,5 +190,56 @@ public class TestServicioClub {
         // servicio.reiniciarEstadoCuotas();
 
         servicio.socios().forEach(s -> assertEquals("Cuota debe estar pendiente", EstadoCuota.PENDIENTE, s.getEstadoCuota()));
+    }
+
+    @Test
+    @DirtiesContext
+    void testAsignarPlazasFinal(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+
+        var temporada = new Temporada(2024);
+        servicio.crearTemporada(direccion, temporada);
+
+        var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio);
+        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio2);
+        var socio3 = new Socio("prueba3@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio3);
+
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        var solicitud1 = new Solicitud(socio, 4);
+        var solicitud2 = new Solicitud(socio2, 2);
+        var solicitud3 = new Solicitud(socio3, 3);
+
+        actividad.agregarSolicitud(solicitud1);
+        actividad.agregarSolicitud(solicitud2);
+        actividad.agregarSolicitud(solicitud3);
+
+
+
+
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
+
+        assertEquals("Se concede una plaza", 0, actividad.getPlazasDisponibles());
+
+    }
+
+    @Test
+    @DirtiesContext
+    void testAsignarPlazasFinInscripcion(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+
+        var temporada = new Temporada(2024);
+        servicio.crearTemporada(direccion, temporada);
+
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
+
     }
 }
