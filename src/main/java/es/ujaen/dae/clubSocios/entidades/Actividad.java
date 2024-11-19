@@ -5,6 +5,7 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
+import es.ujaen.dae.clubSocios.util.UtilList;
 import jakarta.persistence.*;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import jakarta.validation.constraints.*;
@@ -20,7 +21,7 @@ public class Actividad {
     @Positive
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     @NotBlank
     private String titulo;
     @NotBlank
@@ -34,8 +35,16 @@ public class Actividad {
     private LocalDate fechaCelebracion;
     private LocalDate fechaInicioInscripcion;
     private LocalDate fechaFinInscripcion;
-    @OneToMany
-    List<Solicitud> solicitudes;
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Solicitud> solicitudes;
+    // Relación con Temporada
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "temporada_id")
+    private Temporada temporada;
+
+    //Habilitar versión para bloqueo optimista orientado al futuro
+//    @Version
+//    int version;
 
     public Actividad() {
         this.solicitudes = new ArrayList<>();
@@ -43,6 +52,7 @@ public class Actividad {
 
     public Actividad(String titulo, String descripcion, double precio,
                      int totalPlazas, LocalDate fechaCelebracion, LocalDate fechaInicioInscripcion, LocalDate fechaFinInscripcion) {
+        
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.precio = precio;
@@ -89,17 +99,18 @@ public class Actividad {
      * @param socio socio que realiza la solicitud en la actividad
      * @param numAcompanantes numero de acompañantes que llevará el socio
      */
-    public void solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
+    public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
         if (!estaEnPeriodoInscripcion()) {
             throw new FueraDePlazo();
         }
 
-        if (!hayPlaza())
+        if (!hayPlaza()) {
             throw new NoHayPlazas();
+        }
 
-        if (solicitudes.stream()
-                       .anyMatch(s -> s.getSocioId().equals(socio.getSocioId())))
+        if (solicitudes.stream().anyMatch(s -> s.getSocioId().equals(socio.getSocioId()))) {
             throw new SolicitudYaRealizada();
+        }
 
         Solicitud nuevaSolicitud = new Solicitud(socio, numAcompanantes);
 
@@ -108,7 +119,9 @@ public class Actividad {
         }
 
         agregarSolicitud(nuevaSolicitud);
-        socio.anadirSolicitud(nuevaSolicitud);
+
+        // Devolver la nueva solicitud para que sea persistida en el servicio
+        return nuevaSolicitud;
     }
 
     /**
@@ -216,12 +229,40 @@ public class Actividad {
     }
 
     // Getters
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
     public int getPlazasDisponibles() {
         return plazasDisponibles;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public double getPrecio() {
+        return precio;
+    }
+
+    public int getTotalPlazas() {
+        return totalPlazas;
+    }
+
+    public LocalDate getFechaCelebracion() {
+        return fechaCelebracion;
+    }
+
+    public LocalDate getFechaInicioInscripcion() {
+        return fechaInicioInscripcion;
+    }
+
+    public LocalDate getFechaFinInscripcion() {
+        return fechaFinInscripcion;
     }
 
     public List<Solicitud> getSolicitudes() {
@@ -234,6 +275,14 @@ public class Actividad {
 
     public void setPlazasDisponibles(@PositiveOrZero int plazasDisponibles) {
         this.plazasDisponibles = plazasDisponibles;
+    }
+
+    public Temporada getTemporada() {
+        return temporada;
+    }
+
+    public void setTemporada(Temporada temporada) {
+        this.temporada = temporada;
     }
 }
 

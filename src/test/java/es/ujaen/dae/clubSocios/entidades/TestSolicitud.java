@@ -46,8 +46,10 @@ public class TestSolicitud {
     @Test
     @DirtiesContext
     void testConcesionPlazas() {
-        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com", "653398283", "pepifer", EstadoCuota.PENDIENTE);
-        var actividad = new Actividad("Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        var socio1 = new Socio("12345678A", "Pepito", "Fernández", "pepfer@gamil.com",
+                "653398283", "pepifer", EstadoCuota.PENDIENTE);
+        var actividad = new Actividad("Clases de informática", "Aqui se dara clases de informática",
+                25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
         //Como no ha pagado, no se le da de manera instantánea, si no que al final del período de inscripción la dirección decidirá
         actividad.solicitarInscripcion(socio1, 4);

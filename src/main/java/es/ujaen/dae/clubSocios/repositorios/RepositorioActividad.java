@@ -2,6 +2,7 @@ package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
+import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FechaNoValida;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -11,6 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,16 +27,37 @@ public class RepositorioActividad {
     @PersistenceContext
     EntityManager em;
 
-    @Cacheable("actividades")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public Optional<Actividad> buscarPorId(int id) {
+    public Optional<Actividad> buscarPorId(Long id) {
         return Optional.ofNullable(em.find(Actividad.class, id));
     }
 
     public void guardarActividad(Actividad actividad) {
-        em.persist(actividad);
+        try {
+            em.persist(actividad);
+            em.flush();
+        } catch (DuplicateKeyException duplicateKeyException) {
+            throw new ActividadYaRegistrada();
+        }
     }
 
+    public Actividad actualizar(Actividad actividad) {
+        return em.merge(actividad);
+    }
 
+    public void eliminar(Actividad actividad) {
+        em.remove(em.merge(actividad));
+    }
 
+    // listadoIDs
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Long> listadoIds() {
+        return em.createQuery("select a.id from Actividad a").getResultList();
+    }
+
+    // listadoActividades
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Actividad> listadoActividades() {
+        return em.createQuery("select a from Actividad a", Actividad.class).getResultList();
+    }
 }

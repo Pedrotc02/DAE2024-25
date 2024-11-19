@@ -2,9 +2,10 @@ package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,18 +20,28 @@ public class RepositorioSocio {
     @PersistenceContext
     EntityManager em;
 
-    @Cacheable("socios")
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Socio> buscarPorId(String id) {
         return Optional.ofNullable(em.find(Socio.class, id));
     }
 
-    public void guardarSocio(Socio socio) {
-        em.persist(socio);
+    public void crear(Socio socio) {
+        try {
+            em.persist(socio);
+        } catch (DuplicateKeyException duplicateKeyException) {
+            throw new SocioYaRegistrado();
+        }
+
     }
 
+    public Socio actualizar(Socio socio) {
+        return em.merge(socio);
+    }
 
-    @Cacheable("socios")
+    public void eliminar(Socio socio) {
+        em.remove(em.merge(socio));
+    }
+
     public Socio actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
         Optional<Socio> socioOptional = buscarPorId(email);
 
@@ -39,15 +50,22 @@ public class RepositorioSocio {
             socio.setEstadoCuota(estadoCuota);
 
             return em.merge(socio);
-        }else{
+        } else {
             throw new NoSuchElementException();
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-    public List<String> listadoIds(){
+    public List<String> listadoIds() {
         return em.createQuery("select s.socioId from Socio s").getResultList();
-
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Socio> listadoSocios() {
+        return em.createQuery("select s from Socio s", Socio.class).getResultList();
+    }
+
+    public void save() {
+        em.flush();
+    }
 }

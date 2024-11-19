@@ -38,8 +38,12 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-    @OneToMany(mappedBy = "socio")
-    List<Solicitud> solicitudes;
+    @OneToMany(mappedBy = "socio", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Solicitud> solicitudes;
+
+    //Habilitar versión para bloqueo optimista orientado al futuro
+//    @Version
+//    int version;
 
     public Socio(){
 
@@ -57,10 +61,10 @@ public class Socio {
         solicitudes = new ArrayList<>();
     }
 
-    public void modificarSolicitud(int solicitudId, int numAcompanantes) {
+    public void modificarSolicitud(Long solicitudId, int numAcompanantes) {
         boolean flag = false;
         for (Solicitud solicitud : solicitudes) {
-            if (solicitud.getSolicitudId() == solicitudId) {
+            if (solicitud.getSolicitudId().equals(solicitudId)) {
                 solicitud.modificarNumAcompanantes(numAcompanantes);
                 flag = true;
                 break;
@@ -72,12 +76,12 @@ public class Socio {
         }
     }
 
-    public void borrarSolicitud(int solicitudId) {
+    public void borrarSolicitud(Long solicitudId) {
         boolean flag = false;
         Iterator<Solicitud> iterator = solicitudes.iterator();
         while (iterator.hasNext()) {
             Solicitud solicitud = iterator.next();
-            if (solicitud.getSolicitudId() == solicitudId) {
+            if (solicitud.getSolicitudId().equals(solicitudId)) {
                 iterator.remove();
                 flag = true;
                 break;

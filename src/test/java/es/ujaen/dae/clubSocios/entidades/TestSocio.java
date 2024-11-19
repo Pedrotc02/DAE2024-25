@@ -61,7 +61,7 @@ public class TestSocio {
         actividad.solicitarInscripcion(socio2, 4);
 
         actividad.getSolicitudes().stream()
-                                  .filter(s -> s.getSocioId().equals(socio2))
+                                  .filter(s -> s.getSocioId().equals(socio2.getSocioId()))
                                   .forEach(s -> socio2.borrarSolicitud(s.getSolicitudId()));
 
         assertEquals("El numero de solicitudes debe ser 1", 1, socio1.getSolicitudes().size());
