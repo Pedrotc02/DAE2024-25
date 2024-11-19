@@ -3,6 +3,7 @@ package es.ujaen.dae.clubSocios.entidades;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.cglib.core.Local;
 
@@ -12,9 +13,10 @@ import java.time.LocalDate;
 public class Solicitud {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long solicitudId;
+    private String solicitudId;
     @ManyToOne
     @JoinColumn(name = "socioId")
+    @Valid
     private Socio socio;
     @Min(0)
     @Max(5)
@@ -32,8 +34,8 @@ public class Solicitud {
     }
 
     public Solicitud(Socio socio, int numAcompanantes) {
-        this.solicitudId = generarSolicitudId();
         this.socio = socio;
+        this.solicitudId = generarSolicitudId();
         this.numAcompanantes = numAcompanantes;
         //Todas las solicitudes se crean con un estado pendiente
         this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
@@ -43,8 +45,8 @@ public class Solicitud {
         this.plazasConcedidas = 0;
     }
 
-    private Long generarSolicitudId() {
-        return Long.parseLong(this.socio.getSocioId() + System.currentTimeMillis());
+    private String generarSolicitudId() {
+        return this.socio.getSocioId() + System.currentTimeMillis();
     }
 
     public void modificarNumAcompanantes(int nuevoNumAcompanantes) {
@@ -82,7 +84,7 @@ public class Solicitud {
         return socio.getSocioId();
     }
 
-    public Long getSolicitudId() {
+    public String  getSolicitudId() {
         return solicitudId;
     }
 

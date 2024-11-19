@@ -113,7 +113,7 @@ public class TestActividad {
     @DirtiesContext
     void testRevisarSolicitudes() {
 
-        var actividad = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 4, LocalDate.parse("2025-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-15"));
+        var actividad = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 4, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
