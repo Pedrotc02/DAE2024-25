@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Solicitud {
@@ -24,7 +25,7 @@ public class Solicitud {
     @NotNull
     private EstadoSolicitud estadoSolicitud;
     @PastOrPresent
-    private LocalDate fechaSolicitud;
+    private LocalDateTime fechaSolicitud;
     @Min(0)
     @Max(6)
     private int plazasConcedidas;
@@ -40,7 +41,7 @@ public class Solicitud {
         //Todas las solicitudes se crean con un estado pendiente
         this.estadoSolicitud = EstadoSolicitud.PENDIENTE;
         //La solicitud se crea a fecha actual del sistema
-        this.fechaSolicitud = LocalDate.now();
+        this.fechaSolicitud = LocalDateTime.now();
         //Al crear la solicitud de por sí no se concede ninguna plaza, de eso se encarga la propia dirección
         this.plazasConcedidas = 0;
     }
@@ -84,7 +85,7 @@ public class Solicitud {
         return socio.getSocioId();
     }
 
-    public String  getSolicitudId() {
+    public String getSolicitudId() {
         return solicitudId;
     }
 
@@ -96,11 +97,11 @@ public class Solicitud {
         return numAcompanantes;
     }
 
-    public LocalDate getFechaSolicitud() {
+    public LocalDateTime getFechaSolicitud() {
         return fechaSolicitud;
     }
 
-    public void setFechaSolicitud(LocalDate fechaSolicitud) {
+    public void setFechaSolicitud(LocalDateTime fechaSolicitud) {
         this.fechaSolicitud = fechaSolicitud;
     }
 
