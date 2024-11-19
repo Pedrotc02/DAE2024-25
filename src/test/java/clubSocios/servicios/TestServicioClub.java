@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class)
+@ActiveProfiles("test")
 public class TestServicioClub {
     @Autowired
     ServicioClub servicio;
@@ -86,6 +88,18 @@ public class TestServicioClub {
         assertThat(servicio.socios().stream().anyMatch(s -> s.getSocioId().equals(socio3.getSocioId()))).isTrue();
     }
 
+    /**
+     * Crea una nueva solicitud de un socio
+     */
+    @Test
+    @DirtiesContext
+    void testCrearNuevaSolicitud(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+
+        servicio.crearSolicitud(direccion, socio1, 3);
+    }
+
     @Test
     @DirtiesContext
     void testRegistrarSolicitud() {
@@ -99,7 +113,7 @@ public class TestServicioClub {
         servicio.crearSocio(socio1);
         servicio.registrarSolicitud(direccion,socio1, actividad.getId(), 4);
 
-        assertThat(servicio.actividades().get(actividad.getId().intValue())
+        assertThat(servicio.actividades().get(actividad.getId().intValue() - 1)
                 .getSolicitudes().stream()
                 .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
                 .size()
@@ -153,12 +167,16 @@ public class TestServicioClub {
         var temporada = new Temporada(2024);
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        var socio2 = new Socio("edu@gmail.com", "Edu", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        assertThatThrownBy(() -> servicio.crearSocio(socio1)).isInstanceOf(OperacionDeDireccion.class);
+        assertThatThrownBy(() -> servicio.crearTemporada(socio1, temporada)).isInstanceOf(OperacionDeDireccion.class);
+        servicio.crearTemporada(direccion, temporada);
 
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        assertThatThrownBy(() -> servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad)).isInstanceOf(OperacionDeDireccion.class);
+        assertThatThrownBy(() -> servicio.crearActividad(socio1, temporada.getTemporadaId(), actividad)).isInstanceOf(OperacionDeDireccion.class);
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        assertThat(servicio.temporadas().size()).isEqualTo(1);
+        assertThat(servicio.actividades()).size().isEqualTo(1);
     }
 
     @Test
@@ -169,7 +187,7 @@ public class TestServicioClub {
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
 
-        servicio.actualizarEstadoCuota(socio.getSocioId(), EstadoCuota.PAGADA);
+        servicio.actualizarEstadoCuota(direccion, socio.getSocioId(), EstadoCuota.PAGADA);
         assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
     }
 

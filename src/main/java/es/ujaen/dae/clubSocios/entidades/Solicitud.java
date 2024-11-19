@@ -13,10 +13,9 @@ import java.time.LocalDateTime;
 @Entity
 public class Solicitud {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String solicitudId;
     @ManyToOne
-    @JoinColumn(name = "socioId")
+    @JoinColumn(name = "socioId", nullable = false)
     @Valid
     private Socio socio;
     @Min(0)

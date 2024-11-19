@@ -1,7 +1,9 @@
 package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Socio;
+import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -49,9 +51,10 @@ public class RepositorioSocio {
             Socio socio = socioOptional.get();
             socio.setEstadoCuota(estadoCuota);
 
+            save();
             return em.merge(socio);
         } else {
-            throw new NoSuchElementException();
+            throw new SocioNoExiste();
         }
     }
 
@@ -63,6 +66,14 @@ public class RepositorioSocio {
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Socio> listadoSocios() {
         return em.createQuery("select s from Socio s", Socio.class).getResultList();
+    }
+
+    public void crearSolicitud(Solicitud solicitud) {
+        em.persist(solicitud);
+    }
+
+    public void borrarSolicitud(Solicitud solicitud) {
+        em.remove(em.merge(solicitud));
     }
 
     public void save() {

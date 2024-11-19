@@ -84,12 +84,26 @@ public class ServicioClub {
     }
 
 
-    public void actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
+    public void actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
+        comprobarDireccion(dir);
         if (repositorioSocio.buscarPorId(email).isEmpty()) {
             throw new NoSuchElementException();
         }
 
+        var socio = repositorioSocio.buscarPorId(email).get();
+
         repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
+        repositorioSocio.actualizar(socio);
+    }
+
+    public Solicitud crearSolicitud(Socio dir, Socio socio, int numAcomp) {
+        comprobarDireccion(dir);
+
+        repositorioSocio.crear(socio);
+        Solicitud solicitud = new Solicitud(socio, numAcomp);
+        repositorioSocio.crearSolicitud(solicitud);
+
+        return solicitud;
     }
 
     @Transactional
@@ -129,10 +143,9 @@ public class ServicioClub {
 
         if (actividadOptional.isPresent()) {
             Actividad actividad = actividadOptional.get();
+            repositorioActividad.guardarActividad(actividad);
 
             Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
-
-            repositorioActividad.guardarActividad(actividad);
             repositorioSolicitud.guardarSolicitud(nuevaSolicitud);
 
         } else {
