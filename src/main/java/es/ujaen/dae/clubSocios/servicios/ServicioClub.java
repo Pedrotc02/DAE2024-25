@@ -60,6 +60,10 @@ public class ServicioClub {
         return repositorioTemporada.buscarPorId(id);
     }
 
+    public Actividad buscarActividad(Long id){
+        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
+    }
+
     public Socio crearSocio(@Valid Socio socio) {
         if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
             throw new SocioYaRegistrado();
@@ -84,16 +88,13 @@ public class ServicioClub {
     }
 
 
-    public void actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
+    public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
         comprobarDireccion(dir);
         if (repositorioSocio.buscarPorId(email).isEmpty()) {
             throw new NoSuchElementException();
         }
 
-        var socio = repositorioSocio.buscarPorId(email).get();
-
-        repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
-        repositorioSocio.actualizar(socio);
+        return repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
     }
 
     public Solicitud crearSolicitud(Socio dir, Socio socio, int numAcomp) {
@@ -101,7 +102,7 @@ public class ServicioClub {
 
         repositorioSocio.crear(socio);
         Solicitud solicitud = new Solicitud(socio, numAcomp);
-        repositorioSocio.crearSolicitud(solicitud);
+        repositorioSolicitud.guardarSolicitud(solicitud);
 
         return solicitud;
     }
@@ -203,11 +204,16 @@ public class ServicioClub {
         }
     }
 
-    public void resetearEstadoCuota() {
+    public void resetearEstadoCuota(Socio dir) {
+        comprobarDireccion(dir);
+
         List<String> idSocios = repositorioSocio.listadoIds();
 
         idSocios.stream().map(id -> repositorioSocio.buscarPorId(id).get())
-                .forEach(socio -> socio.setEstadoCuota(EstadoCuota.PENDIENTE));
+                .forEach( socio -> {
+                    socio.setEstadoCuota(EstadoCuota.PENDIENTE);
+                    socio = repositorioSocio.actualizar(socio);
+                });
 
     }
 

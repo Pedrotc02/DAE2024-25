@@ -99,6 +99,8 @@ public class TestServicioClub {
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
         servicio.crearSolicitud(direccion, socio1, 3);
+
+        assertThat(servicio.solicitudes().size()).isEqualTo(1);
     }
 
     @Test
@@ -142,10 +144,13 @@ public class TestServicioClub {
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
 
-        servicio.crearActividad(direccion, temporada.getTemporadaId(),
-                new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21")));
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        var acti2 = servicio.buscarActividad(actividad.getId());
 
         assertThat(servicio.actividades().size()).isEqualTo(1);
+        assertThat(acti2.getId()).isEqualTo(actividad.getId());
 
     }
 
@@ -188,7 +193,7 @@ public class TestServicioClub {
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
 
-        servicio.actualizarEstadoCuota(direccion, socio.getSocioId(), EstadoCuota.PAGADA);
+        socio = servicio.actualizarEstadoCuota(direccion, socio.getSocioId(), EstadoCuota.PAGADA);
         assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
     }
 
@@ -203,7 +208,7 @@ public class TestServicioClub {
         servicio.crearSocio(socio1);
         servicio.crearSocio(socio2);
 
-        // servicio.reiniciarEstadoCuotas();
+        servicio.resetearEstadoCuota(direccion);
 
         servicio.socios().forEach(s -> assertEquals("Cuota debe estar pendiente", EstadoCuota.PENDIENTE, s.getEstadoCuota()));
     }
@@ -226,9 +231,13 @@ public class TestServicioClub {
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        var solicitud1 = new Solicitud(socio, 4);
-        var solicitud2 = new Solicitud(socio2, 2);
-        var solicitud3 = new Solicitud(socio3, 3);
+//        var solicitud1 = new Solicitud(socio, 4);
+//        var solicitud2 = new Solicitud(socio2, 2);
+//        var solicitud3 = new Solicitud(socio3, 3);
+
+        var solicitud1 = servicio.crearSolicitud(direccion, socio, 4);
+        var solicitud2 = servicio.crearSolicitud(direccion, socio2, 2);
+        var solicitud3 = servicio.crearSolicitud(direccion, socio3, 3);
 
         actividad.agregarSolicitud(solicitud1);
         actividad.agregarSolicitud(solicitud2);
@@ -257,5 +266,12 @@ public class TestServicioClub {
 
         servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
 
+    }
+
+    //Por hacer
+    @Test
+    @DirtiesContext
+    void testReservaUltimaPlaza2UsuariosALaVez() {
+        
     }
 }
