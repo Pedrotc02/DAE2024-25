@@ -208,20 +208,14 @@ public class TestServicioClub {
 
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
-        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
-        servicio.crearSocio(socio2);
-        var socio3 = new Socio("prueba3@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
-        servicio.crearSocio(socio3);
 
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        var prueba = new Solicitud(socio, 4);
+        servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
+        var solicitud = servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(0);
 
-
-
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud);
 
         assertEquals("Se concede una plaza", 0, actividad.getPlazasDisponibles());
 
