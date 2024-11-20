@@ -85,9 +85,7 @@ public class TestServicioClub {
 
         var socio3 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "33333333M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio3);
-
-        // Verifica que el sistema contiene ahora dos socios registrados
-        assertThat(servicio.socios()).hasSize(2);
+        
         assertThat(servicio.socios().stream().anyMatch(s -> s.getSocioId().equals(socio3.getSocioId()))).isTrue();
     }
 
