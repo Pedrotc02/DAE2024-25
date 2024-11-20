@@ -42,9 +42,8 @@ public class Actividad {
     @JoinColumn(name = "temporada_id")
     private Temporada temporada;
 
-    //Habilitar versión para bloqueo optimista orientado al futuro
-//    @Version
-//    int version;
+    @Version
+    int version;
 
     public Actividad() {
         this.solicitudes = new ArrayList<>();
@@ -267,7 +266,7 @@ public class Actividad {
         return solicitudes;
     }
 
-    boolean hayPlaza() {
+    public boolean hayPlaza() {
         return plazasDisponibles >= 1;
     }
 

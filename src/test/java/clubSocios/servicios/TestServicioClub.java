@@ -5,9 +5,14 @@ import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.*;
+import es.ujaen.dae.clubSocios.repositorios.RepositorioActividad;
+import es.ujaen.dae.clubSocios.repositorios.RepositorioSocio;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -243,9 +248,6 @@ public class TestServicioClub {
         actividad.agregarSolicitud(solicitud2);
         actividad.agregarSolicitud(solicitud3);
 
-
-
-
         servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
         servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
 
@@ -265,13 +267,56 @@ public class TestServicioClub {
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
         servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
-
     }
 
-    //Por hacer
     @Test
-    @DirtiesContext
-    void testReservaUltimaPlaza2UsuariosALaVez() {
-        
+    @Transactional
+    public void testAsignarUltimaPlazaConcurrencia() throws InterruptedException {
+        int anioActual = LocalDate.now().getYear();
+        LocalDate fechaInicioInscripcion = LocalDate.of(anioActual, 11, 15); // Inicio antes de hoy
+        LocalDate fechaFinInscripcion = LocalDate.of(anioActual, 12, 15); // Fin después de hoy
+        LocalDate fechaCelebracion = LocalDate.of(anioActual, 12, 20); // Celebración después de la fecha de fin
+
+        Actividad actividad = new Actividad(
+                "Excursión de Montaña",
+                "Actividad de senderismo en la sierra",
+                50.0,
+                1, // Solo una plaza disponible
+                fechaCelebracion,
+                fechaInicioInscripcion,
+                fechaFinInscripcion
+        );
+        servicio.guardarActividad(actividad);
+
+        Socio socio1 = new Socio("socio1@mail.com", "Juan", "Pérez", "12345678A", "953112233", "clave123", EstadoCuota.PAGADA);
+        Socio socio2 = new Socio("socio2@mail.com", "Ana", "López", "23456789B", "953223311", "clave123", EstadoCuota.PAGADA);
+        servicio.crearSocio(socio1);
+        servicio.crearSocio(socio2);
+
+        // Crear dos hilos para simular la concurrencia
+        Thread hilo1 = new Thread(() -> {
+            servicio.asignarUltimaPlaza(socio1, actividad.getId());
+        });
+
+        Thread hilo2 = new Thread(() -> {
+            servicio.asignarUltimaPlaza(socio2, actividad.getId());
+        });
+
+        hilo1.start();
+        hilo2.start();
+
+        hilo1.join();
+        hilo2.join();
+
+        // Verificar que solo uno de los dos socios haya conseguido la plaza
+        Actividad actividadFinal = servicio.buscarActividad(actividad.getId());
+        if (actividadFinal == null)
+            throw new NullPointerException("La actividad no se ha encontrado.");
+
+        long solicitudesConPlaza = actividadFinal.getSolicitudes().stream()
+                .filter(solicitud -> solicitud.getEstadoSolicitud() == EstadoSolicitud.CERRADA)
+                .count();
+
+        Assertions.assertEquals(1, solicitudesConPlaza, "Solo un socio debería haber obtenido la plaza.");
     }
 }
