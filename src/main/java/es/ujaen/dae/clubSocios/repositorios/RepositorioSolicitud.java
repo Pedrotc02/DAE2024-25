@@ -64,6 +64,6 @@ public class RepositorioSolicitud {
      */
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Solicitud> listadoSolicitudes() {
-        return em.createQuery("select s from Solicitud s", Solicitud.class).getResultList();
+        return em.createQuery("select a.solicitudes from Actividad a", Solicitud.class).getResultList();
     }
 }

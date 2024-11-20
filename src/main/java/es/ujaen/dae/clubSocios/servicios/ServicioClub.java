@@ -52,8 +52,8 @@ public class ServicioClub {
         return repositorioTemporada.listadoTemporadas();
     }
 
-    public List<Solicitud> solicitudes() {
-        return repositorioSolicitud.listadoSolicitudes();
+    public List<Solicitud> solicitudes(Long actividadId) {
+        return repositorioActividad.listadoSolicitudes(actividadId);
     }
 
     public Optional<Temporada> buscarTemporada(Long id) {
@@ -64,14 +64,6 @@ public class ServicioClub {
         return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
     }
 
-    public Socio crearSocio(@Valid Socio socio) {
-        if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
-            throw new SocioYaRegistrado();
-        }
-        repositorioSocio.crear(socio);
-        return socio;
-    }
-
     public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
         comprobarDireccion(dir);
 
@@ -80,31 +72,12 @@ public class ServicioClub {
         return temporada;
     }
 
-    public Optional<Socio> login(@Email String email, String clave) {
-        if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
-            return Optional.of(EJEMPLO_SOCIO);
-
-        return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
-    }
-
-
-    public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
-        comprobarDireccion(dir);
-        if (repositorioSocio.buscarPorId(email).isEmpty()) {
-            throw new NoSuchElementException();
+    public Socio crearSocio(@Valid Socio socio) {
+        if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
+            throw new SocioYaRegistrado();
         }
-
-        return repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
-    }
-
-    public Solicitud crearSolicitud(Socio dir, Socio socio, int numAcomp) {
-        comprobarDireccion(dir);
-
         repositorioSocio.crear(socio);
-        Solicitud solicitud = new Solicitud(socio, numAcomp);
-        repositorioSolicitud.guardarSolicitud(solicitud);
-
-        return solicitud;
+        return socio;
     }
 
     @Transactional
@@ -127,6 +100,15 @@ public class ServicioClub {
         return actividad;
     }
 
+    public Solicitud crearSolicitud(Socio dir, @Valid Socio socio, int numAcomp, Long actividadId) {
+        comprobarDireccion(dir);
+
+        Solicitud solicitud = new Solicitud(socio, numAcomp);
+        repositorioActividad.guardarSolicitud(socio.getSocioId(), solicitud, actividadId);
+
+        return solicitud;
+    }
+
     /**
      * La dirección registra una nueva solicitud en una actividad.
      * Esta funcionalidad es suponiendo que alguien vaya presencialmente
@@ -147,11 +129,28 @@ public class ServicioClub {
             repositorioActividad.guardarActividad(actividad);
 
             Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
-            repositorioSolicitud.guardarSolicitud(nuevaSolicitud);
+            //repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
 
         } else {
             throw new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe.");
         }
+    }
+
+    public Optional<Socio> login(@Email String email, String clave) {
+        if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
+            return Optional.of(EJEMPLO_SOCIO);
+
+        return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
+    }
+
+
+    public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
+        comprobarDireccion(dir);
+        if (repositorioSocio.buscarPorId(email).isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
     }
 
     /**
