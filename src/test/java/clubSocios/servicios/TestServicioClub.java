@@ -7,8 +7,12 @@ import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.*;
+import es.ujaen.dae.clubSocios.repositorios.RepositorioActividad;
+import es.ujaen.dae.clubSocios.repositorios.RepositorioSocio;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -209,19 +213,22 @@ public class TestServicioClub {
 
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
+        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio2);
+        var socio3 = new Socio("prueba3@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio3);
 
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        var solicitud = new Solicitud(socio, 4);
-        actividad.agregarSolicitud(solicitud);
+        var solicitud1 = new Solicitud(socio, 4);
+        var solicitud2 = new Solicitud(socio2, 2);
+        var solicitud3 = new Solicitud(socio3, 3);
 
-//        servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
-//        var solicitud = servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(0);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
 
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud);
-
-        assertEquals("Se concede una plaza", 1, actividad.getPlazasDisponibles());
+        assertEquals("Se concede una plaza", 0, actividad.getPlazasDisponibles());
 
     }
 
@@ -237,17 +244,15 @@ public class TestServicioClub {
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
         servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
-
     }
 
-    //Por hacer
     @Test
-    @DirtiesContext
-    void testReservaUltimaPlaza2UsuariosALaVez() {
+    public void testAsignarUltimaPlazaConcurrencia() throws InterruptedException {
         int anioActual = LocalDate.now().getYear();
         LocalDate fechaInicioInscripcion = LocalDate.of(anioActual, 11, 15); // Inicio antes de hoy
         LocalDate fechaFinInscripcion = LocalDate.of(anioActual, 12, 15); // Fin después de hoy
         LocalDate fechaCelebracion = LocalDate.of(anioActual, 12, 20); // Celebración después de la fecha de fin
+
         Actividad actividad = new Actividad(
                 "Excursión de Montaña",
                 "Actividad de senderismo en la sierra",
@@ -258,32 +263,44 @@ public class TestServicioClub {
                 fechaFinInscripcion
         );
         servicio.guardarActividad(actividad);
+
         Socio socio1 = new Socio("socio1@mail.com", "Juan", "Pérez", "12345678A", "953112233", "clave123", EstadoCuota.PAGADA);
         Socio socio2 = new Socio("socio2@mail.com", "Ana", "López", "23456789B", "953223311", "clave123", EstadoCuota.PAGADA);
         servicio.crearSocio(socio1);
         servicio.crearSocio(socio2);
+
         // Crear dos hilos para simular la concurrencia
         Thread hilo1 = new Thread(() -> {
-            servicio.asignarUltimaPlaza(socio1, actividad.getId());
+            try {
+                servicio.asignarUltimaPlaza(socio1, actividad.getId());
+            } catch (NoHayPlazas | SolicitudYaRealizada e) {
+                System.err.println(e.getMessage());
+            }
         });
+
         Thread hilo2 = new Thread(() -> {
-            servicio.asignarUltimaPlaza(socio2, actividad.getId());
+            try {
+                servicio.asignarUltimaPlaza(socio2, actividad.getId());
+            } catch (NoHayPlazas | SolicitudYaRealizada e) {
+                System.err.println(e.getMessage());
+            }
         });
+
         hilo1.start();
         hilo2.start();
-        try{hilo1.join();} catch (InterruptedException e) {}
-        try {
-            hilo2.join();
-        } catch (InterruptedException e) {
 
-        }
+        hilo1.join();
+        hilo2.join();
+
         // Verificar que solo uno de los dos socios haya conseguido la plaza
         Actividad actividadFinal = servicio.buscarActividad(actividad.getId());
         if (actividadFinal == null)
             throw new NullPointerException("La actividad no se ha encontrado.");
+
         long solicitudesConPlaza = actividadFinal.getSolicitudes().stream()
-                .filter(solicitud -> solicitud.getEstadoSolicitud() == EstadoSolicitud.CERRADA)
+                .filter(solicitud -> solicitud.getPlazasConcedidas() == 1)
                 .count();
-        assertEquals("Solo un socio debería haber obtenido la plaza.", solicitudesConPlaza, 1);
+
+        Assertions.assertEquals(1, solicitudesConPlaza, "Solo un socio debería haber obtenido la plaza.");
     }
 }

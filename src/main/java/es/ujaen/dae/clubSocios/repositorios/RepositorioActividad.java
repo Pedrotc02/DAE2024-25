@@ -72,15 +72,8 @@ public class RepositorioActividad {
                 .orElse(Collections.emptyList());
     }
 
-    //guardar una solicitud (necesita un socio y una actividad, además de la propia solicitud)
+    @Transactional
     public void guardarSolicitud(String socioId, Solicitud solicitud, Long actividadId) {
-        List<Solicitud> solicitudes = listadoSolicitudes(actividadId);
-
-        boolean existeSolicitud = solicitudes.stream().anyMatch(s -> s.getSocioId().equals(socioId));
-
-        if (existeSolicitud)
-            throw new SolicitudYaRealizada();
-
         em.persist(solicitud);
     }
 

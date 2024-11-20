@@ -42,7 +42,6 @@ public class Actividad {
     @JoinColumn(name = "temporada_id")
     private Temporada temporada;
 
-    //Habilitar versión para bloqueo optimista orientado al futuro
     @Version
     int version;
 
@@ -100,7 +99,7 @@ public class Actividad {
 //        }
 
         if (!hayPlaza()) {
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponibles en la actividad");
         }
 
         if (solicitudes.stream().anyMatch(s -> s.getSocioId().equals(socio.getSocioId()))) {
@@ -115,6 +114,9 @@ public class Actividad {
 
         agregarSolicitud(nuevaSolicitud);
 
+        // Sin la línea de abajo, fallan los test de Socio (preguntar a profesor) y el de Actividad (testSolicitudInscripcionValida)
+        // socio.anadirSolicitud(nuevaSolicitud);
+
         // Devolver la nueva solicitud para que sea persistida en el servicio
         return nuevaSolicitud;
     }
@@ -125,7 +127,7 @@ public class Actividad {
      */
     public void asignarPlaza(Solicitud s) {
         if (!hayPlaza())
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponibles en la actividad");
 
         plazasDisponibles--;
         s.concederPlaza();
@@ -148,7 +150,7 @@ public class Actividad {
         }
 
         if (!hayPlaza())
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponibles en la actividad");
 
         if (!solicitudes.contains(solicitud))
             throw new SolicitudNoExiste();
@@ -173,7 +175,7 @@ public class Actividad {
             throw new FueraDePlazo();
 
         if (!hayPlaza())
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponibles en la actividad");
 
         solicitudes.stream()
                    .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
@@ -264,7 +266,7 @@ public class Actividad {
         return solicitudes;
     }
 
-    boolean hayPlaza() {
+    public boolean hayPlaza() {
         return plazasDisponibles >= 1;
     }
 

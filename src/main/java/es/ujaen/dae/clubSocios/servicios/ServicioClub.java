@@ -216,23 +216,27 @@ public class ServicioClub {
     @Transactional
     public void asignarUltimaPlaza(@Valid Socio socio, Long actividadId) {
         boolean plazaAsignada = false;
+
         while (!plazaAsignada) {
             try {
                 Actividad actividad = repositorioActividad.buscarPorId(actividadId)
                         .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
 
-                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0);    //Al solicitar la inscripción se guarda automáticamente la solicitud en la bd.
-
-                repositorioActividad.actualizarSolicitud(nuevaSolicitud);
-                repositorioActividad.refrescar();
+                if (!actividad.hayPlaza()) {
+                    throw new NoHayPlazas("No hay plazas disponibles para asignar");
+                }
+                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0); // Sin acompañantes
+                // Check si la solitud no ha sido ya realizada
+                repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
+                repositorioActividad.actualizar(actividad);
 
                 plazaAsignada = true; // Salir del bucle si no hay conflicto
             } catch (OptimisticLockingFailureException e) {
-                throw new NoHayPlazas();
                 // Si hay un conflicto, reintentar cargando el estado actualizado
             }
         }
     }
+
     public void guardarActividad(Actividad actividad) {
         repositorioActividad.guardarActividad(actividad);
     }
