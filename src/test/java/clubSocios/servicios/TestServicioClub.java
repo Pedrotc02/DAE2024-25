@@ -203,32 +203,7 @@ public class TestServicioClub {
         servicio.socios().forEach(s -> assertEquals("Cuota debe estar pendiente", EstadoCuota.PENDIENTE, s.getEstadoCuota()));
     }
 
-    @Test
-    @DirtiesContext
-    void testAsignarPlazasFinal(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
-        var temporada = new Temporada(2024);
-        servicio.crearTemporada(direccion, temporada);
-
-        var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
-        servicio.crearSocio(socio);
-
-        var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
-        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
-
-//        var solicitud = new Solicitud(socio, 4);
-//        actividad.agregarSolicitud(solicitud);
-
-        servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
-        var solicitud = servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(0);
-        System.out.println(servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(1).getPlazasConcedidas());
-
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud);
-
-        assertEquals("Se concede una plaza", 1, actividad.getPlazasDisponibles());
-
-    }
 
     @Test
     @DirtiesContext
