@@ -94,9 +94,9 @@ public class Actividad {
      * @param numAcompanantes numero de acompañantes que llevará el socio
      */
     public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
-//        if (!estaEnPeriodoInscripcion()) {
-//            throw new FueraDePlazo();
-//        }
+        if (!estaEnPeriodoInscripcion()) {
+            throw new FueraDePlazo();
+        }
 
         if (!hayPlaza()) {
             throw new NoHayPlazas("No hay plazas disponibles en la actividad");

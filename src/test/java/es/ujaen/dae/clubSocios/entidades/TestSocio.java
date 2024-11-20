@@ -41,10 +41,8 @@ public class TestSocio {
         var socio1 = new Socio("pepfer@gmail.com", "Pepito", "Fernández", "12345678A", "645367898", "pepfer", EstadoCuota.PENDIENTE);
         var actividad = new Actividad("Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
-        actividad.solicitarInscripcion(socio1, 1);
-        actividad.getSolicitudes().stream()
-                                  .filter(s -> s.getSocioId().equals(socio1.getSocioId()))
-                                  .forEach(solicitud -> socio1.modificarSolicitud(solicitud.getSolicitudId(), 2));
+        var solicitudIns = actividad.solicitarInscripcion(socio1, 1);
+        actividad.getSolicitudes().get(0).modificarNumAcompanantes(2);
 
         assertEquals("El numero de acompañantes debe ser 2", 2, actividad.getSolicitudes().get(0).getNumAcompanantes());
     }
@@ -57,12 +55,13 @@ public class TestSocio {
 
         var actividad = new Actividad("Clases de informática", "Aqui se dara clases de informática",25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
-        actividad.solicitarInscripcion(socio1, 4);
-        actividad.solicitarInscripcion(socio2, 4);
+        var solicitud1 = actividad.solicitarInscripcion(socio1, 4);
+        var solicitud2 = actividad.solicitarInscripcion(socio2, 4);
 
-        actividad.getSolicitudes().stream()
-                                  .filter(s -> s.getSocioId().equals(socio2.getSocioId()))
-                                  .forEach(s -> socio2.borrarSolicitud(s.getSolicitudId()));
+        //System.out.println(actividad.getSolicitudes(0).);
+
+        socio1.borrarSolicitud(actividad.getSolicitudes().get(0).getSolicitudId());
+        socio2.borrarSolicitud(solicitud2.getSolicitudId());
 
         assertEquals("El numero de solicitudes debe ser 1", 1, socio1.getSolicitudes().size());
         assertFalse("La solicitud del socio 2 no se deberia encontrar", socio1.getSolicitudes().stream().anyMatch(s -> s.getSocioId().equals(socio2.getSocioId())));

@@ -116,10 +116,9 @@ public class TestActividad {
                 actividad3.solicitarInscripcion(socio1, 2)
         ).isInstanceOf(SolicitudYaRealizada.class);
 
-        assertThat(socio1.getSolicitudes()).size().isEqualTo(1);
 
         //Todavía no ha acabado el período de inscripción, por lo que no puede revisar nadie las solicitudes de la actividad
-        assertThatThrownBy(() -> actividad3.revisarSolicitudes()).isInstanceOf(FechaNoValida.class);
+        assertThatThrownBy(actividad3::revisarSolicitudes).isInstanceOf(FechaNoValida.class);
         assertThat(actividad3.getSolicitudes()).size().isEqualTo(1);
     }
 

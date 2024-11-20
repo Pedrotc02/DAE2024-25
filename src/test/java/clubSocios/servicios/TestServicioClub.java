@@ -213,22 +213,20 @@ public class TestServicioClub {
 
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
-        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
-        servicio.crearSocio(socio2);
-        var socio3 = new Socio("prueba3@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
-        servicio.crearSocio(socio3);
 
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        var solicitud1 = new Solicitud(socio, 4);
-        var solicitud2 = new Solicitud(socio2, 2);
-        var solicitud3 = new Solicitud(socio3, 3);
+//        var solicitud = new Solicitud(socio, 4);
+//        actividad.agregarSolicitud(solicitud);
 
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
+        servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
+        var solicitud = servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(0);
+        System.out.println(servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(1).getPlazasConcedidas());
 
-        assertEquals("Se concede una plaza", 0, actividad.getPlazasDisponibles());
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud);
+
+        assertEquals("Se concede una plaza", 1, actividad.getPlazasDisponibles());
 
     }
 
@@ -244,6 +242,8 @@ public class TestServicioClub {
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
         servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
+        assertEquals("skjv", 29, servicio.actividades().get(actividad.getId().intValue() -1).getPlazasDisponibles());
+
     }
 
     @Test
