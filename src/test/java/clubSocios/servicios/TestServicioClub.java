@@ -47,9 +47,6 @@ public class TestServicioClub {
     @DirtiesContext
     void testNuevaActividad() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-        //Esto ya se comprueba en el testNuevaTemporada
-//        assertThatThrownBy(() -> servicio.crearTemporada(new Temporada(2024))).isInstanceOf(TemporadaYaRegistrada.class);
-
         var temporada24 = servicio.crearTemporada(direccion, new Temporada(2024));
 
         var noValida = new Actividad("Visita a museo", "Descricion", -15, -30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
@@ -89,24 +86,6 @@ public class TestServicioClub {
         assertThat(servicio.socios().stream().anyMatch(s -> s.getSocioId().equals(socio3.getSocioId()))).isTrue();
     }
 
-    /**
-     * Crea una nueva solicitud de un socio
-     */
-    @Test
-    @DirtiesContext
-    void testCrearNuevaSolicitud(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-        var socio1 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "33333333M", "690123456", "123456", EstadoCuota.PENDIENTE);
-        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        var temporada24 = servicio.crearTemporada(direccion, new Temporada(2024));
-
-        actividad = servicio.crearActividad(direccion, temporada24.getTemporadaId(), actividad);
-        socio1 = servicio.crearSocio(socio1);
-        var solicitud = servicio.crearSolicitud(direccion, socio1, 3, actividad.getId());
-
-        assertThat(servicio.solicitudes(actividad.getId()).size()).isEqualTo(1);
-    }
-
     @Test
     @DirtiesContext
     void testRegistrarSolicitud() {
@@ -125,6 +104,8 @@ public class TestServicioClub {
                 .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
                 .size()
                 .isEqualTo(1);
+
+        assertThat(servicio.solicitudes(actividad.getId()).size()).isEqualTo(1);
     }
 
     @Test

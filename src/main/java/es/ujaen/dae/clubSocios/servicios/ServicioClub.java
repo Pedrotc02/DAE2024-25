@@ -8,7 +8,6 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioActividad;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioSocio;
-import es.ujaen.dae.clubSocios.repositorios.RepositorioSolicitud;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioTemporada;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -29,9 +28,6 @@ public class ServicioClub {
 
     @Autowired
     RepositorioActividad repositorioActividad;
-
-    @Autowired
-    RepositorioSolicitud repositorioSolicitud;
 
     @Autowired
     RepositorioTemporada repositorioTemporada;
@@ -100,15 +96,6 @@ public class ServicioClub {
         return actividad;
     }
 
-    public Solicitud crearSolicitud(Socio dir, @Valid Socio socio, int numAcomp, Long actividadId) {
-        comprobarDireccion(dir);
-
-        Solicitud solicitud = new Solicitud(socio, numAcomp);
-        repositorioActividad.guardarSolicitud(socio.getSocioId(), solicitud, actividadId);
-
-        return solicitud;
-    }
-
     /**
      * La dirección registra una nueva solicitud en una actividad.
      * Esta funcionalidad es suponiendo que alguien vaya presencialmente
@@ -127,8 +114,10 @@ public class ServicioClub {
         if (actividadOptional.isPresent()) {
             Actividad actividad = actividadOptional.get();
             repositorioActividad.guardarActividad(actividad);
+            //Al solicitarInscripción en la actividad, la solicitud se guarda automáticamente en la bd.
+            actividad.solicitarInscripcion(socio, numAcom);
 
-            Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
+           // Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
             //repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
 
         } else {
