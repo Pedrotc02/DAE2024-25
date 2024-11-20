@@ -99,4 +99,8 @@ public class RepositorioActividad {
     public Solicitud actualizarSolicitud(Solicitud solicitud) {
         return em.merge(solicitud);
     }
+
+    public void refrescar() {
+        em.flush();
+    }
 }

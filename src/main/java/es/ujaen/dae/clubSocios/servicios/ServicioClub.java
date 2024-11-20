@@ -12,6 +12,7 @@ import es.ujaen.dae.clubSocios.repositorios.RepositorioTemporada;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -209,5 +210,30 @@ public class ServicioClub {
         if (!EJEMPLO_SOCIO.getSocioId().equals(socio.getSocioId()) && !EJEMPLO_SOCIO.getClaveAcceso().equals(socio.getClaveAcceso())) {
             throw new OperacionDeDireccion();
         }
+    }
+
+    /* Operacion concurrente con bloqueo optimista */
+    @Transactional
+    public void asignarUltimaPlaza(@Valid Socio socio, Long actividadId) {
+        boolean plazaAsignada = false;
+        while (!plazaAsignada) {
+            try {
+                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
+                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
+
+                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0);    //Al solicitar la inscripción se guarda automáticamente la solicitud en la bd.
+
+                repositorioActividad.actualizarSolicitud(nuevaSolicitud);
+                repositorioActividad.refrescar();
+
+                plazaAsignada = true; // Salir del bucle si no hay conflicto
+            } catch (OptimisticLockingFailureException e) {
+                throw new NoHayPlazas();
+                // Si hay un conflicto, reintentar cargando el estado actualizado
+            }
+        }
+    }
+    public void guardarActividad(Actividad actividad) {
+        repositorioActividad.guardarActividad(actividad);
     }
 }
