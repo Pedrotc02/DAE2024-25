@@ -235,7 +235,7 @@ public class ServicioClub {
                         .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
 
                 if (!actividad.hayPlaza()) {
-                    throw new NoHayPlazas();
+                    throw new NoHayPlazas("No hay plazas disponibles para asignar");
                 }
                 Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0); // Sin acompañantes
                 repositorioSolicitud.guardarSolicitud(nuevaSolicitud);

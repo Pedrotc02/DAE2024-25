@@ -270,7 +270,6 @@ public class TestServicioClub {
     }
 
     @Test
-    @Transactional
     public void testAsignarUltimaPlazaConcurrencia() throws InterruptedException {
         int anioActual = LocalDate.now().getYear();
         LocalDate fechaInicioInscripcion = LocalDate.of(anioActual, 11, 15); // Inicio antes de hoy
@@ -295,11 +294,19 @@ public class TestServicioClub {
 
         // Crear dos hilos para simular la concurrencia
         Thread hilo1 = new Thread(() -> {
-            servicio.asignarUltimaPlaza(socio1, actividad.getId());
+            try {
+                servicio.asignarUltimaPlaza(socio1, actividad.getId());
+            } catch (NoHayPlazas e) {
+                System.err.println(e.getMessage());
+            }
         });
 
         Thread hilo2 = new Thread(() -> {
-            servicio.asignarUltimaPlaza(socio2, actividad.getId());
+            try {
+                servicio.asignarUltimaPlaza(socio2, actividad.getId());
+            } catch (NoHayPlazas e) {
+                System.err.println(e.getMessage());
+            }
         });
 
         hilo1.start();
@@ -314,7 +321,7 @@ public class TestServicioClub {
             throw new NullPointerException("La actividad no se ha encontrado.");
 
         long solicitudesConPlaza = actividadFinal.getSolicitudes().stream()
-                .filter(solicitud -> solicitud.getEstadoSolicitud() == EstadoSolicitud.CERRADA)
+                .filter(solicitud -> solicitud.getPlazasConcedidas() == 1)
                 .count();
 
         Assertions.assertEquals(1, solicitudesConPlaza, "Solo un socio debería haber obtenido la plaza.");

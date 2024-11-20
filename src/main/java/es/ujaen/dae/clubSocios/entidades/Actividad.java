@@ -99,7 +99,7 @@ public class Actividad {
         }
 
         if (!hayPlaza()) {
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas dispoinibles para inscribirse");
         }
 
         if (solicitudes.stream().anyMatch(s -> s.getSocioId().equals(socio.getSocioId()))) {
@@ -127,7 +127,7 @@ public class Actividad {
      */
     public void asignarPlaza(Solicitud s) {
         if (!hayPlaza())
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponibles para asignar");
 
         plazasDisponibles--;
         s.concederPlaza();
@@ -150,7 +150,7 @@ public class Actividad {
         }
 
         if (!hayPlaza())
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponiles para asginar");
 
         if (!solicitudes.contains(solicitud))
             throw new SolicitudNoExiste();
@@ -175,7 +175,7 @@ public class Actividad {
             throw new FueraDePlazo();
 
         if (!hayPlaza())
-            throw new NoHayPlazas();
+            throw new NoHayPlazas("No hay plazas disponibles para asignar");
 
         solicitudes.stream()
                    .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
