@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Transactional
@@ -60,7 +59,7 @@ public class RepositorioSocio {
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<String> listadoIds() {
-        return em.createQuery("select s.socioId from Socio s").getResultList();
+        return em.createQuery("select s.socioId from Socio s", String.class).getResultList();
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -74,6 +73,10 @@ public class RepositorioSocio {
 
     public void borrarSolicitud(Solicitud solicitud) {
         em.remove(em.merge(solicitud));
+    }
+
+    public List<Solicitud> buscarSolicitudesPorSocioId(String idSocio) {
+        return em.createQuery("select s.solicitudes from Socio s where s.socioId =: idSocio", Solicitud.class).getResultList();
     }
 
     public void save() {

@@ -52,9 +52,6 @@ public class TestServicioClub {
     @DirtiesContext
     void testNuevaActividad() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-        //Esto ya se comprueba en el testNuevaTemporada
-//        assertThatThrownBy(() -> servicio.crearTemporada(new Temporada(2024))).isInstanceOf(TemporadaYaRegistrada.class);
-
         var temporada24 = servicio.crearTemporada(direccion, new Temporada(2024));
 
         var noValida = new Actividad("Visita a museo", "Descricion", -15, -30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
@@ -94,20 +91,6 @@ public class TestServicioClub {
         assertThat(servicio.socios().stream().anyMatch(s -> s.getSocioId().equals(socio3.getSocioId()))).isTrue();
     }
 
-    /**
-     * Crea una nueva solicitud de un socio
-     */
-    @Test
-    @DirtiesContext
-    void testCrearNuevaSolicitud(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-
-        servicio.crearSolicitud(direccion, socio1, 3);
-
-        assertThat(servicio.solicitudes().size()).isEqualTo(1);
-    }
-
     @Test
     @DirtiesContext
     void testRegistrarSolicitud() {
@@ -126,6 +109,8 @@ public class TestServicioClub {
                 .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
                 .size()
                 .isEqualTo(1);
+
+        assertThat(servicio.solicitudes(actividad.getId()).size()).isEqualTo(1);
     }
 
     @Test
@@ -236,17 +221,9 @@ public class TestServicioClub {
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-//        var solicitud1 = new Solicitud(socio, 4);
-//        var solicitud2 = new Solicitud(socio2, 2);
-//        var solicitud3 = new Solicitud(socio3, 3);
-
-        var solicitud1 = servicio.crearSolicitud(direccion, socio, 4);
-        var solicitud2 = servicio.crearSolicitud(direccion, socio2, 2);
-        var solicitud3 = servicio.crearSolicitud(direccion, socio3, 3);
-
-        actividad.agregarSolicitud(solicitud1);
-        actividad.agregarSolicitud(solicitud2);
-        actividad.agregarSolicitud(solicitud3);
+        var solicitud1 = new Solicitud(socio, 4);
+        var solicitud2 = new Solicitud(socio2, 2);
+        var solicitud3 = new Solicitud(socio3, 3);
 
         servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
         servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
@@ -296,7 +273,7 @@ public class TestServicioClub {
         Thread hilo1 = new Thread(() -> {
             try {
                 servicio.asignarUltimaPlaza(socio1, actividad.getId());
-            } catch (NoHayPlazas e) {
+            } catch (NoHayPlazas | SolicitudYaRealizada e) {
                 System.err.println(e.getMessage());
             }
         });
@@ -304,7 +281,7 @@ public class TestServicioClub {
         Thread hilo2 = new Thread(() -> {
             try {
                 servicio.asignarUltimaPlaza(socio2, actividad.getId());
-            } catch (NoHayPlazas e) {
+            } catch (NoHayPlazas | SolicitudYaRealizada e) {
                 System.err.println(e.getMessage());
             }
         });

@@ -38,7 +38,7 @@ public class Socio {
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
-    @OneToMany(mappedBy = "socio", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "socio", fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private List<Solicitud> solicitudes;
 
     //Habilitar versión para bloqueo optimista orientado al futuro
