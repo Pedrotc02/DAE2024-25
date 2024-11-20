@@ -43,8 +43,8 @@ public class Actividad {
     private Temporada temporada;
 
     //Habilitar versión para bloqueo optimista orientado al futuro
-//    @Version
-//    int version;
+    @Version
+    int version;
 
     public Actividad() {
         this.solicitudes = new ArrayList<>();
