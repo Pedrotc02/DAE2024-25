@@ -115,9 +115,6 @@ public class Actividad {
 
         agregarSolicitud(nuevaSolicitud);
 
-        // Sin la línea de abajo, fallan los test de Socio (preguntar a profesor) y el de Actividad (testSolicitudInscripcionValida)
-        // socio.anadirSolicitud(nuevaSolicitud);
-
         // Devolver la nueva solicitud para que sea persistida en el servicio
         return nuevaSolicitud;
     }

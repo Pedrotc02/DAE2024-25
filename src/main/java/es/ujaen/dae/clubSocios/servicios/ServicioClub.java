@@ -52,20 +52,16 @@ public class ServicioClub {
         return repositorioTemporada.listadoTemporadas();
     }
 
-    public List<Solicitud> solicitudes() {
-        return repositorioSolicitud.listadoSolicitudes();
+    public List<Solicitud> solicitudes(Long actividadId) {
+        return repositorioActividad.listadoSolicitudes(actividadId);
     }
 
     public Optional<Temporada> buscarTemporada(Long id) {
         return repositorioTemporada.buscarPorId(id);
     }
 
-    public Socio crearSocio(@Valid Socio socio) {
-        if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
-            throw new SocioYaRegistrado();
-        }
-        repositorioSocio.crear(socio);
-        return socio;
+    public Actividad buscarActividad(Long id){
+        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
     }
 
     public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
@@ -76,20 +72,12 @@ public class ServicioClub {
         return temporada;
     }
 
-    public Optional<Socio> login(@Email String email, String clave) {
-        if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
-            return Optional.of(EJEMPLO_SOCIO);
-
-        return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
-    }
-
-
-    public void actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
-        if (repositorioSocio.buscarPorId(email).isEmpty()) {
-            throw new NoSuchElementException();
+    public Socio crearSocio(@Valid Socio socio) {
+        if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
+            throw new SocioYaRegistrado();
         }
-
-        repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
+        repositorioSocio.crear(socio);
+        return socio;
     }
 
     @Transactional
@@ -112,6 +100,15 @@ public class ServicioClub {
         return actividad;
     }
 
+    public Solicitud crearSolicitud(Socio dir, @Valid Socio socio, int numAcomp, Long actividadId) {
+        comprobarDireccion(dir);
+
+        Solicitud solicitud = new Solicitud(socio, numAcomp);
+        repositorioActividad.guardarSolicitud(socio.getSocioId(), solicitud, actividadId);
+
+        return solicitud;
+    }
+
     /**
      * La dirección registra una nueva solicitud en una actividad.
      * Esta funcionalidad es suponiendo que alguien vaya presencialmente
@@ -129,15 +126,31 @@ public class ServicioClub {
 
         if (actividadOptional.isPresent()) {
             Actividad actividad = actividadOptional.get();
+            repositorioActividad.guardarActividad(actividad);
 
             Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
-
-            repositorioActividad.guardarActividad(actividad);
-            repositorioSolicitud.guardarSolicitud(nuevaSolicitud);
+            //repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
 
         } else {
             throw new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe.");
         }
+    }
+
+    public Optional<Socio> login(@Email String email, String clave) {
+        if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
+            return Optional.of(EJEMPLO_SOCIO);
+
+        return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
+    }
+
+
+    public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
+        comprobarDireccion(dir);
+        if (repositorioSocio.buscarPorId(email).isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
     }
 
     /**
@@ -190,11 +203,16 @@ public class ServicioClub {
         }
     }
 
-    public void resetearEstadoCuota() {
+    public void resetearEstadoCuota(Socio dir) {
+        comprobarDireccion(dir);
+
         List<String> idSocios = repositorioSocio.listadoIds();
 
         idSocios.stream().map(id -> repositorioSocio.buscarPorId(id).get())
-                .forEach(socio -> socio.setEstadoCuota(EstadoCuota.PENDIENTE));
+                .forEach( socio -> {
+                    socio.setEstadoCuota(EstadoCuota.PENDIENTE);
+                    socio = repositorioSocio.actualizar(socio);
+                });
 
     }
 

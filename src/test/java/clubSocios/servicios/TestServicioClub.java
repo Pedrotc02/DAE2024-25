@@ -89,6 +89,24 @@ public class TestServicioClub {
         assertThat(servicio.socios().stream().anyMatch(s -> s.getSocioId().equals(socio3.getSocioId()))).isTrue();
     }
 
+    /**
+     * Crea una nueva solicitud de un socio
+     */
+    @Test
+    @DirtiesContext
+    void testCrearNuevaSolicitud(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var socio1 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "33333333M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        var temporada24 = servicio.crearTemporada(direccion, new Temporada(2024));
+
+        actividad = servicio.crearActividad(direccion, temporada24.getTemporadaId(), actividad);
+        socio1 = servicio.crearSocio(socio1);
+        var solicitud = servicio.crearSolicitud(direccion, socio1, 3, actividad.getId());
+
+        assertThat(servicio.solicitudes(actividad.getId()).size()).isEqualTo(1);
+    }
+
     @Test
     @DirtiesContext
     void testRegistrarSolicitud() {
@@ -102,7 +120,7 @@ public class TestServicioClub {
         servicio.crearSocio(socio1);
         servicio.registrarSolicitud(direccion,socio1, actividad.getId(), 4);
 
-        assertThat(servicio.actividades().get(actividad.getId().intValue())
+        assertThat(servicio.actividades().get(actividad.getId().intValue() - 1)
                 .getSolicitudes().stream()
                 .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
                 .size()
@@ -130,10 +148,13 @@ public class TestServicioClub {
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
 
-        servicio.crearActividad(direccion, temporada.getTemporadaId(),
-                new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21")));
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        var acti2 = servicio.buscarActividad(actividad.getId());
 
         assertThat(servicio.actividades().size()).isEqualTo(1);
+        assertThat(acti2.getId()).isEqualTo(actividad.getId());
 
     }
 
@@ -156,12 +177,16 @@ public class TestServicioClub {
         var temporada = new Temporada(2024);
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        var socio2 = new Socio("edu@gmail.com", "Edu", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        assertThatThrownBy(() -> servicio.crearSocio(socio1)).isInstanceOf(OperacionDeDireccion.class);
+        assertThatThrownBy(() -> servicio.crearTemporada(socio1, temporada)).isInstanceOf(OperacionDeDireccion.class);
+        servicio.crearTemporada(direccion, temporada);
 
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        assertThatThrownBy(() -> servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad)).isInstanceOf(OperacionDeDireccion.class);
+        assertThatThrownBy(() -> servicio.crearActividad(socio1, temporada.getTemporadaId(), actividad)).isInstanceOf(OperacionDeDireccion.class);
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        assertThat(servicio.temporadas().size()).isEqualTo(1);
+        assertThat(servicio.actividades()).size().isEqualTo(1);
     }
 
     @Test
@@ -172,7 +197,7 @@ public class TestServicioClub {
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
 
-        servicio.actualizarEstadoCuota(socio.getSocioId(), EstadoCuota.PAGADA);
+        socio = servicio.actualizarEstadoCuota(direccion, socio.getSocioId(), EstadoCuota.PAGADA);
         assertEquals("EL estado debe ser PAGADA", EstadoCuota.PAGADA, socio.getEstadoCuota());
     }
 
@@ -187,7 +212,7 @@ public class TestServicioClub {
         servicio.crearSocio(socio1);
         servicio.crearSocio(socio2);
 
-        // servicio.reiniciarEstadoCuotas();
+        servicio.resetearEstadoCuota(direccion);
 
         servicio.socios().forEach(s -> assertEquals("Cuota debe estar pendiente", EstadoCuota.PENDIENTE, s.getEstadoCuota()));
     }
@@ -202,23 +227,22 @@ public class TestServicioClub {
 
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
+        var socio2 = new Socio("prueba2@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio2);
+        var socio3 = new Socio("prueba3@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
+        servicio.crearSocio(socio3);
 
-        var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-15"));
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
         var prueba = new Solicitud(socio, 4);
 
-        actividad.agregarSolicitud(prueba);
 
 
-        //servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud1);
 
-        var solicitud = actividad.getSolicitudes().size();
-        System.out.println(solicitud);
-
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), prueba);
-
-        assertEquals("Se debe conceder una plaza, plazas disponibles 1", 1, actividad.getPlazasDisponibles());
+        assertEquals("Se concede una plaza", 0, actividad.getPlazasDisponibles());
 
     }
 
@@ -234,6 +258,13 @@ public class TestServicioClub {
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
         servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
+
+    }
+
+    //Por hacer
+    @Test
+    @DirtiesContext
+    void testReservaUltimaPlaza2UsuariosALaVez() {
 
     }
 }

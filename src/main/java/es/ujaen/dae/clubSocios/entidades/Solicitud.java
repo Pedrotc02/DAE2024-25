@@ -15,7 +15,7 @@ public class Solicitud {
     @Id
     private String solicitudId;
     @ManyToOne
-    @JoinColumn(name = "socioId")
+    @JoinColumn(name = "socioId", nullable = false)
     @Valid
     private Socio socio;
     @Min(0)

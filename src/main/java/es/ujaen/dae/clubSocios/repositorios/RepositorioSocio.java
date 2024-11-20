@@ -1,7 +1,9 @@
 package es.ujaen.dae.clubSocios.repositorios;
 
 import es.ujaen.dae.clubSocios.entidades.Socio;
+import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
+import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import es.ujaen.dae.clubSocios.excepciones.SocioYaRegistrado;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -11,7 +13,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Transactional
@@ -49,20 +50,33 @@ public class RepositorioSocio {
             Socio socio = socioOptional.get();
             socio.setEstadoCuota(estadoCuota);
 
+            save();
             return em.merge(socio);
         } else {
-            throw new NoSuchElementException();
+            throw new SocioNoExiste();
         }
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<String> listadoIds() {
-        return em.createQuery("select s.socioId from Socio s").getResultList();
+        return em.createQuery("select s.socioId from Socio s", String.class).getResultList();
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<Socio> listadoSocios() {
         return em.createQuery("select s from Socio s", Socio.class).getResultList();
+    }
+
+    public void crearSolicitud(Solicitud solicitud) {
+        em.persist(solicitud);
+    }
+
+    public void borrarSolicitud(Solicitud solicitud) {
+        em.remove(em.merge(solicitud));
+    }
+
+    public List<Solicitud> buscarSolicitudesPorSocioId(String idSocio) {
+        return em.createQuery("select s.solicitudes from Socio s where s.socioId =: idSocio", Solicitud.class).getResultList();
     }
 
     public void save() {
