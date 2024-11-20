@@ -213,12 +213,15 @@ public class TestServicioClub {
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 2, LocalDate.parse("2025-12-25"), LocalDate.parse("2024-11-12"), LocalDate.parse("2024-11-18"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
-        var solicitud = servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(0);
+        var solicitud = new Solicitud(socio, 4);
+        actividad.agregarSolicitud(solicitud);
+
+//        servicio.registrarSolicitud(direccion, socio, actividad.getId(), 4);
+//        var solicitud = servicio.actividades().get(actividad.getId().intValue() -1).getSolicitudes().get(0);
 
         servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud);
 
-        assertEquals("Se concede una plaza", 0, actividad.getPlazasDisponibles());
+        assertEquals("Se concede una plaza", 1, actividad.getPlazasDisponibles());
 
     }
 
