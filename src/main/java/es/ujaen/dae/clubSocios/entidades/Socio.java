@@ -5,6 +5,7 @@ import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.excepciones.ActividadYaRegistrada;
 import es.ujaen.dae.clubSocios.excepciones.FueraDePlazo;
+import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -16,6 +17,7 @@ import jakarta.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 public class Socio {

@@ -43,20 +43,6 @@ public class RepositorioSocio {
         em.remove(em.merge(socio));
     }
 
-    public Socio actualizarEstadoCuota(String email, EstadoCuota estadoCuota) {
-        Optional<Socio> socioOptional = buscarPorId(email);
-
-        if (socioOptional.isPresent()) {
-            Socio socio = socioOptional.get();
-            socio.setEstadoCuota(estadoCuota);
-
-            save();
-            return em.merge(socio);
-        } else {
-            throw new SocioNoExiste();
-        }
-    }
-
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public List<String> listadoIds() {
         return em.createQuery("select s.socioId from Socio s", String.class).getResultList();
@@ -79,7 +65,4 @@ public class RepositorioSocio {
         return em.createQuery("select s.solicitudes from Socio s where s.socioId =: idSocio", Solicitud.class).getResultList();
     }
 
-    public void save() {
-        em.flush();
-    }
 }

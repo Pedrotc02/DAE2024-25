@@ -37,35 +37,15 @@ public class ServicioClub {
 
     }
 
-    public List<Socio> socios() {
-        return repositorioSocio.listadoSocios();
-    }
 
-    public List<Actividad> actividades() {
-        return repositorioActividad.listadoActividades();
-    }
-
-    public List<Temporada> temporadas() {
-        return repositorioTemporada.listadoTemporadas();
-    }
-
-    public List<Solicitud> solicitudes(Long actividadId) {
-        return repositorioActividad.listadoSolicitudes(actividadId);
-    }
-
-    public Optional<Temporada> buscarTemporada(Long id) {
-        return repositorioTemporada.buscarPorId(id);
-    }
-
-    public Actividad buscarActividad(Long id){
-        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
-    }
+//    public Actividad buscarActividad(Long id){
+//        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
+//    }
 
     public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
         comprobarDireccion(dir);
 
         repositorioTemporada.crear(temporada);
-        repositorioTemporada.save();
         return temporada;
     }
 
@@ -81,18 +61,12 @@ public class ServicioClub {
     public Actividad crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
         comprobarDireccion(dir);
 
-        Optional<Temporada> temporadaOptional = repositorioTemporada.buscarPorId(temporadaId);
+        var temporada = repositorioTemporada.buscarPorId(temporadaId).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + temporadaId + " no encontrada"));
 
-        if (temporadaOptional.isEmpty()) {
-            throw new TemporadaNoEncontrada("Temporada con ID " + temporadaId + " no existe.");
-        }
-
-        Temporada temporada = temporadaOptional.get();
         temporada.aniadirActividad(actividad);
         actividad.setTemporada(temporada);
 
         repositorioActividad.guardarActividad(actividad);
-        repositorioTemporada.actualizar(temporada);
 
         return actividad;
     }
@@ -110,20 +84,11 @@ public class ServicioClub {
     public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
         comprobarDireccion(dir);
 
-        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
+        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
 
-        if (actividadOptional.isPresent()) {
-            Actividad actividad = actividadOptional.get();
-            repositorioActividad.guardarActividad(actividad);
-            //Al solicitarInscripción en la actividad, la solicitud se guarda automáticamente en la bd.
-            actividad.solicitarInscripcion(socio, numAcom);
+        repositorioActividad.guardarActividad(actividad);
+        actividad.solicitarInscripcion(socio, numAcom);
 
-           // Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, numAcom);
-            //repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
-
-        } else {
-            throw new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe.");
-        }
     }
 
     public Optional<Socio> login(@Email String email, String clave) {
@@ -133,14 +98,14 @@ public class ServicioClub {
         return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
     }
 
-
     public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
         comprobarDireccion(dir);
-        if (repositorioSocio.buscarPorId(email).isEmpty()) {
-            throw new NoSuchElementException();
-        }
 
-        return repositorioSocio.actualizarEstadoCuota(email, estadoCuota);
+        var socio = repositorioSocio.buscarPorId(email).orElseThrow(SocioNoExiste::new);
+
+        socio.setEstadoCuota(estadoCuota);
+        return repositorioSocio.actualizar(socio);
+
     }
 
     /**
@@ -151,47 +116,42 @@ public class ServicioClub {
      */
     public List<Solicitud> revisarSolicitudes(@Valid Socio dir, Long actividadId) {
         comprobarDireccion(dir);
-        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
+        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
 
-        if (actividadOptional.isPresent()) {
-            Actividad actividad = actividadOptional.get();
-            return actividad.revisarSolicitudes();
-        }
-
-        return null;
+        return actividad.revisarSolicitudes();
     }
 
-    /**
-     * Asignación de plazas al final del período de inscripción de manera manual llevada a cabo por la dirección.
-     * Si la solicitud no se encuentra entre las solicitudes de la actividad, lanza la correspondiente excepción.
-     * En caso de que el proceso sea exitoso, asignará una plaza en la actividad,
-     * contará en la solicitud que se le ha concedido una plaza más, y se revisará el estado de la misma por si necesita cambiarse.
-     *
-     * @param actividadId id de la actividad en la que se debe encontrar la solicitud.
-     * @param solicitud   solicitud a la que la dirección va a asignar la plaza, si se puede.
-     */
-    public void asignarPlazasFinal(@Valid Socio dir, Long actividadId, @Valid Solicitud solicitud) {
-        comprobarDireccion(dir);
-
-        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
-
-        if (actividadOptional.isPresent()) {
-            Actividad actividad = actividadOptional.get();
-            actividad.asignarPlazasFinal(solicitud);
-        }
-
-    }
-
-    public void asignarPlazasFinInscripcion(@Valid Socio dir, Long actividadId) {
-        comprobarDireccion(dir);
-
-        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
-
-        if (actividadOptional.isPresent()) {
-            Actividad actividad = actividadOptional.get();
-            actividad.asignarPlazasFinInscripcion();
-        }
-    }
+//    /**
+//     * Asignación de plazas al final del período de inscripción de manera manual llevada a cabo por la dirección.
+//     * Si la solicitud no se encuentra entre las solicitudes de la actividad, lanza la correspondiente excepción.
+//     * En caso de que el proceso sea exitoso, asignará una plaza en la actividad,
+//     * contará en la solicitud que se le ha concedido una plaza más, y se revisará el estado de la misma por si necesita cambiarse.
+//     *
+//     * @param actividadId id de la actividad en la que se debe encontrar la solicitud.
+//     * @param solicitud   solicitud a la que la dirección va a asignar la plaza, si se puede.
+//     */
+//    public void asignarPlazasFinal(@Valid Socio dir, Long actividadId, @Valid Solicitud solicitud) {
+//        comprobarDireccion(dir);
+//
+//        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
+//
+//        if (actividadOptional.isPresent()) {
+//            Actividad actividad = actividadOptional.get();
+//            actividad.asignarPlazasFinal(solicitud);
+//        }
+//
+//    }
+//
+//    public void asignarPlazasFinInscripcion(@Valid Socio dir, Long actividadId) {
+//        comprobarDireccion(dir);
+//
+//        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
+//
+//        if (actividadOptional.isPresent()) {
+//            Actividad actividad = actividadOptional.get();
+//            actividad.asignarPlazasFinInscripcion();
+//        }
+//    }
 
     public void resetearEstadoCuota(Socio dir) {
         comprobarDireccion(dir);
