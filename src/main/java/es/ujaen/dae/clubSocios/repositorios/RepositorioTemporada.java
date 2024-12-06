@@ -99,7 +99,4 @@ public class RepositorioTemporada {
                 .getResultList();
     }
 
-    public void save() {
-        em.flush();
-    }
 }

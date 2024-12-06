@@ -37,10 +37,13 @@ public class ServicioClub {
 
     }
 
+    public Optional<Temporada> buscarTemporada(Long id) {
+        return repositorioTemporada.buscarPorId(id);
+    }
 
-//    public Actividad buscarActividad(Long id){
-//        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
-//    }
+    public Actividad buscarActividad(Long id){
+        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
+    }
 
     public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
         comprobarDireccion(dir);
