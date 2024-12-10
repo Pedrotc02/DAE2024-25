@@ -1,6 +1,6 @@
 package es.ujaen.dae.clubSocios.rest.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public record DTOActividad(
@@ -10,7 +10,7 @@ public record DTOActividad(
         double precio,
         int plazasDisp,
         int totalPlazas,
-        LocalDateTime fechaInicioInscripcion,
-        LocalDateTime fechaFinInscripcion,
-        LocalDateTime fechaCelebracion) {
+        LocalDate fechaInicioInscripcion,
+        LocalDate fechaFinInscripcion,
+        LocalDate fechaCelebracion) {
 }

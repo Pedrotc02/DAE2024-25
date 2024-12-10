@@ -7,5 +7,6 @@ public record DTOSolicitud(
         int numAcom,
         EstadoSolicitud estado,
         LocalDateTime fechaSoli,
-        int plazasConcedidas) {
+        int plazasConcedidas,
+        String idSocio) {
 }
