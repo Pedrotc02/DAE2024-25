@@ -97,7 +97,7 @@ public class TestServicioClub {
 
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
         servicio.crearSocio(socio1);
-        servicio.registrarSolicitud(direccion,socio1, actividad.getId(), 4);
+        //servicio.registrarSolicitud(direccion,socio1, actividad.getId(), solicitud, 4);
 
         List<Solicitud> resultadoEsperado = servicio.revisarSolicitudes(direccion, actividad.getId());
 
@@ -203,6 +203,33 @@ public class TestServicioClub {
         assertEquals("El estado de cuota de los socios debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2.getEstadoCuota());
     }
 
+    @Test
+    @DirtiesContext
+    void testAsignarPlazasFinal(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+
+        var temporada = new Temporada(2024);
+        servicio.crearTemporada(direccion, temporada);
+
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        servicio.crearSocio(socio1);
+
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-09"));
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        var solicitud = new Solicitud(socio1, 3);
+
+        servicio.guardarSolicitud(solicitud, socio1, actividad);
+        actividad.agregarSolicitud(solicitud);
+
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud, socio1);
+
+        var solicitudesActualizadas = actividad.revisarSolicitudes();
+
+        assertEquals("El numero de solicitudes actualizadas debe ser 1", 1, solicitudesActualizadas.size());
+        assertEquals("La solicitud debería estar en estado Cerrada ya que se han asignado los acompañantes.", EstadoSolicitud.CERRADA, solicitudesActualizadas.get(0).getEstadoSolicitud());
+        assertEquals("El numero de plazas libres de la actividad sera 27 ", 27, actividad.getPlazasDisponibles());
+    }
 
 //    @Test
 //    @DirtiesContext

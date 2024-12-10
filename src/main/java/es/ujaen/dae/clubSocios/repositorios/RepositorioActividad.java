@@ -14,6 +14,8 @@ import java.util.*;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +38,6 @@ public class RepositorioActividad {
     public void guardarActividad(Actividad actividad) {
         try {
             em.persist(actividad);
-            em.flush();
         } catch (DuplicateKeyException duplicateKeyException) {
             throw new ActividadYaRegistrada();
         }
@@ -72,8 +73,9 @@ public class RepositorioActividad {
                 .orElse(Collections.emptyList());
     }
 
+
     @Transactional
-    public void guardarSolicitud(String socioId, Solicitud solicitud, Long actividadId) {
+    public void guardarSolicitud(String socioId, Solicitud solicitud, Actividad actividad) {
         em.persist(solicitud);
     }
 

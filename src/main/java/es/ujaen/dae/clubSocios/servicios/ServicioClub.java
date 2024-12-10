@@ -74,25 +74,25 @@ public class ServicioClub {
         return actividad;
     }
 
-    /**
-     * La dirección registra una nueva solicitud en una actividad.
-     * Esta funcionalidad es suponiendo que alguien vaya presencialmente
-     * y le diga al personal de la dirección que quiere apuntarse a una actividad con un número de acompañantes,
-     * ó que la dirección quiera hacerlo por su cuenta, pero siempre deberá indicar un socio, una actividad y un número de acompañantes.
-     *
-     * @param socio       socio que quiere hacer la solicitud en la actividad.
-     * @param actividadId identificador de la actividad en la que se meterá la solicitud.
-     */
-    @Transactional
-    public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
-        comprobarDireccion(dir);
-
-        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
-
-        repositorioActividad.guardarActividad(actividad);
-        actividad.solicitarInscripcion(socio, numAcom);
-
-    }
+//    /**
+//     * La dirección registra una nueva solicitud en una actividad.
+//     * Esta funcionalidad es suponiendo que alguien vaya presencialmente
+//     * y le diga al personal de la dirección que quiere apuntarse a una actividad con un número de acompañantes,
+//     * ó que la dirección quiera hacerlo por su cuenta, pero siempre deberá indicar un socio, una actividad y un número de acompañantes.
+//     *
+//     * @param socio       socio que quiere hacer la solicitud en la actividad.
+//     * @param actividadId identificador de la actividad en la que se meterá la solicitud.
+//     */
+//    @Transactional
+//    public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
+//        comprobarDireccion(dir);
+//
+//        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
+//
+//        repositorioActividad.guardarActividad(actividad);
+//        actividad.solicitarInscripcion(socio, numAcom);
+//
+//    }
 
     public Optional<Socio> login(@Email String email, String clave) {
         if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
@@ -124,36 +124,30 @@ public class ServicioClub {
         return actividad.revisarSolicitudes();
     }
 
-//    /**
-//     * Asignación de plazas al final del período de inscripción de manera manual llevada a cabo por la dirección.
-//     * Si la solicitud no se encuentra entre las solicitudes de la actividad, lanza la correspondiente excepción.
-//     * En caso de que el proceso sea exitoso, asignará una plaza en la actividad,
-//     * contará en la solicitud que se le ha concedido una plaza más, y se revisará el estado de la misma por si necesita cambiarse.
-//     *
-//     * @param actividadId id de la actividad en la que se debe encontrar la solicitud.
-//     * @param solicitud   solicitud a la que la dirección va a asignar la plaza, si se puede.
-//     */
-//    public void asignarPlazasFinal(@Valid Socio dir, Long actividadId, @Valid Solicitud solicitud) {
-//        comprobarDireccion(dir);
-//
-//        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
-//
-//        if (actividadOptional.isPresent()) {
-//            Actividad actividad = actividadOptional.get();
-//            actividad.asignarPlazasFinal(solicitud);
-//        }
-//
-//    }
+    /**
+     * Asignación de plazas al final del período de inscripción de manera manual llevada a cabo por la dirección.
+     * Si la solicitud no se encuentra entre las solicitudes de la actividad, lanza la correspondiente excepción.
+     * En caso de que el proceso sea exitoso, asignará una plaza en la actividad,
+     * contará en la solicitud que se le ha concedido una plaza más, y se revisará el estado de la misma por si necesita cambiarse.
+     *
+     * @param actividadId id de la actividad en la que se debe encontrar la solicitud.
+     * @param solicitud   solicitud a la que la dirección va a asignar la plaza, si se puede.
+     */
+    @Transactional
+    public void asignarPlazasFinal(Socio dir, Long actividadId, @Valid Solicitud solicitud, Socio socio) {
+        comprobarDireccion(dir);
+        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
+
+        actividad.asignarPlazasFinal(solicitud);
+        repositorioActividad.guardarActividad(actividad);
+    }
+
 //
 //    public void asignarPlazasFinInscripcion(@Valid Socio dir, Long actividadId) {
 //        comprobarDireccion(dir);
+//        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
 //
-//        Optional<Actividad> actividadOptional = repositorioActividad.buscarPorId(actividadId);
-//
-//        if (actividadOptional.isPresent()) {
-//            Actividad actividad = actividadOptional.get();
-//            actividad.asignarPlazasFinInscripcion();
-//        }
+//        actividad.asignarPlazasFinInscripcion();
 //    }
 
     public void resetearEstadoCuota(Socio dir) {
@@ -176,31 +170,69 @@ public class ServicioClub {
     }
 
     /* Operacion concurrente con bloqueo optimista */
-    @Transactional
-    public void asignarUltimaPlaza(@Valid Socio socio, Long actividadId) {
-        boolean plazaAsignada = false;
+//    @Transactional
+//    public void asignarUltimaPlaza(@Valid Socio socio, Long actividadId) {
+//        boolean plazaAsignada = false;
+//
+//        while (!plazaAsignada) {
+//            try {
+//                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
+//                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
+//
+//                if (!actividad.hayPlaza()) {
+//                    throw new NoHayPlazas("No hay plazas disponibles para asignar");
+//                }
+//                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0); // Sin acompañantes
+//                // Check si la solitud no ha sido ya realizada
+//                repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
+//                repositorioActividad.actualizar(actividad);
+//
+//                plazaAsignada = true; // Salir del bucle si no hay conflicto
+//            } catch (OptimisticLockingFailureException e) {
+//                // Si hay un conflicto, reintentar cargando el estado actualizado
+//            }
+//        }
+//    }
 
-        while (!plazaAsignada) {
-            try {
-                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
-                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
+    //TODO::Unir funcionalidad registrarSolicitud - bloqueos
+//    @Transactional
+//    public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
+//        comprobarDireccion(dir);
+//
+//        boolean solicitudRegistrada = false;
+//        int maxIntentos = 5;
+//        int intentos = 0;
+//
+//        while (!solicitudRegistrada && intentos < maxIntentos) {
+//            try {
+//                // Cargar la actividad
+//                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
+//                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
+//
+//                // Guardar los cambios
+//                actividad.solicitarInscripcion(socio, numAcom);
+//                repositorioActividad.guardarActividad(actividad);
+//
+//
+//                solicitudRegistrada = true; // Salir del bucle si no hay conflicto
+//
+//            } catch (OptimisticLockingFailureException e) {
+//                intentos++;
+//                if (intentos >= maxIntentos) {
+//                    throw new RuntimeException("No se pudo registrar la solicitud después de " + maxIntentos + " intentos debido a conflictos de concurrencia.");
+//                }
+//                // Reintentar automáticamente
+//            }
+//        }
+//    }
 
-                if (!actividad.hayPlaza()) {
-                    throw new NoHayPlazas("No hay plazas disponibles para asignar");
-                }
-                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0); // Sin acompañantes
-                // Check si la solitud no ha sido ya realizada
-                repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
-                repositorioActividad.actualizar(actividad);
-
-                plazaAsignada = true; // Salir del bucle si no hay conflicto
-            } catch (OptimisticLockingFailureException e) {
-                // Si hay un conflicto, reintentar cargando el estado actualizado
-            }
-        }
-    }
 
     public void guardarActividad(Actividad actividad) {
         repositorioActividad.guardarActividad(actividad);
+    }
+
+    public void guardarSolicitud(Solicitud solicitud, Socio socio, Actividad actividad) {
+        actividad.agregarSolicitud(solicitud);
+        repositorioActividad.guardarSolicitud(socio.getSocioId(), solicitud, actividad);
     }
 }

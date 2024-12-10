@@ -68,6 +68,7 @@ public class Actividad {
 
     public void agregarSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
+
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
