@@ -41,27 +41,36 @@ public class ServicioClub {
         return repositorioTemporada.buscarPorId(id);
     }
 
-    public Actividad buscarActividad(Long id){
-        return repositorioActividad.buscarPorId(id).get() != null ? repositorioActividad.buscarPorId(id).get() : null;
+    ///Prefiero buscar temporada por año, en vez de por id
+    public Optional<Temporada> buscarTemporada(int anio) {
+        return repositorioTemporada.buscarPorAnio(anio);
     }
 
-    public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
+    public Optional<Actividad> buscarActividad(Long id){
+        return repositorioActividad.buscarPorId(id);
+    }
+
+    public List<Actividad> obtenerActividadesTemporada(Long id) {
+        return repositorioTemporada.obtenerActividadesDeTemporada(id);
+    }
+
+    public void crearTemporada(Socio dir, @Valid Temporada temporada) {
         comprobarDireccion(dir);
 
         repositorioTemporada.crear(temporada);
-        return temporada;
+        //return temporada;
     }
 
-    public Socio crearSocio(@Valid Socio socio) {
+    public void crearSocio(@Valid Socio socio) {
         if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
             throw new SocioYaRegistrado();
         }
         repositorioSocio.crear(socio);
-        return socio;
+        //return socio;
     }
 
     @Transactional
-    public Actividad crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
+    public void crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
         comprobarDireccion(dir);
 
         var temporada = repositorioTemporada.buscarPorId(temporadaId).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + temporadaId + " no encontrada"));
@@ -71,7 +80,7 @@ public class ServicioClub {
 
         repositorioActividad.guardarActividad(actividad);
 
-        return actividad;
+        //return actividad;
     }
 
 //    /**

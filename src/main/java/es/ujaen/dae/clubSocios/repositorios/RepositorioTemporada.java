@@ -35,10 +35,10 @@ public class RepositorioTemporada {
         return Optional.ofNullable(em.find(Temporada.class, id));
     }
 
-    private Temporada buscarPorAnio(int anio) {
-        return em.createQuery("select t from Temporada t where t.anio =: anio", Temporada.class)
+    public Optional<Temporada> buscarPorAnio(int anio) {
+        return Optional.ofNullable(em.createQuery("select t from Temporada t where t.anio =: anio", Temporada.class)
                 .setParameter("anio", anio)
-                .getSingleResult();
+                .getSingleResult());
     }
 
     /**
