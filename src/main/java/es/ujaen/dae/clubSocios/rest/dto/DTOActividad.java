@@ -11,6 +11,5 @@ public record DTOActividad(
         int totalPlazas,
         LocalDate fechaInicioInscripcion,
         LocalDate fechaFinInscripcion,
-        LocalDate fechaCelebracion,
-        Long idTemporada) {
+        LocalDate fechaCelebracion) {
 }

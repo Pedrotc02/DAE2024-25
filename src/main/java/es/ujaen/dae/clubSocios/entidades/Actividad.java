@@ -113,8 +113,6 @@ public class Actividad {
             asignarPlaza(nuevaSolicitud);
         }
 
-        agregarSolicitud(nuevaSolicitud);
-
         // Sin la línea de abajo, fallan los test de Socio (preguntar a profesor) y el de Actividad (testSolicitudInscripcionValida)
         // socio.anadirSolicitud(nuevaSolicitud);
 
@@ -153,7 +151,7 @@ public class Actividad {
         if (!hayPlaza())
             throw new NoHayPlazas("No hay plazas disponibles en la actividad");
 
-        if (!solicitudes.contains(solicitud))
+        if (!solicitudExiste(solicitud.getSolicitudId()))
             throw new SolicitudNoExiste();
 
         if (solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA)) {
@@ -281,6 +279,15 @@ public class Actividad {
 
     public void setTemporada(Temporada temporada) {
         this.temporada = temporada;
+    }
+
+    public boolean solicitudExiste(String solicitudId){
+        for (int i = 0; i < solicitudes.size(); i++) {
+            if(solicitudes.get(i).getSolicitudId().equals(solicitudId)){
+                return true;
+            }
+        }
+        return false;
     }
 }
 

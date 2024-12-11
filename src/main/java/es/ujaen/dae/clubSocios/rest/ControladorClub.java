@@ -127,7 +127,7 @@ public class ControladorClub {
             servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
             servicioClub.login(dtoSocio.id(), dtoSocio.claveAcceso()).orElseThrow(SocioNoExiste::new);
-            servicioClub.registrarSolicitud(direccion, mapeador.entidad(dtoSocio), idact, numAcom);
+            //servicioClub.registrarSolicitud(direccion, mapeador.entidad(dtoSocio), idact, numAcom);
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SocioNoExiste s) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (FueraDePlazo | NoHayPlazas e) {

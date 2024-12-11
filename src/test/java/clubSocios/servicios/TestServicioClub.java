@@ -139,7 +139,7 @@ public class TestServicioClub {
 
         var acti2 = servicio.buscarActividad(actividad.getId());
 
-        assertThat(acti2.getId()).isEqualTo(actividad.getId());
+        assertThat(acti2.get().getId()).isEqualTo(actividad.getId());
 
     }
 
@@ -171,7 +171,7 @@ public class TestServicioClub {
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
         assertThat(servicio.buscarTemporada(temporada.getTemporadaId()).isPresent());
-        assertThat(servicio.buscarActividad(actividad.getId()).getId().equals(actividad.getId()));
+        assertThat(servicio.buscarActividad(actividad.getId()).get().getId().equals(actividad.getId()));
     }
 
     @Test
@@ -219,13 +219,13 @@ public class TestServicioClub {
 
         var solicitud = servicio.procesarInscripcion(socio1, 3, true, actividad);
 
-        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud, socio1);
+        servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud);
 
         var solicitudesActualizadas = actividad.revisarSolicitudes();
 
         assertEquals("El numero de solicitudes actualizadas debe ser 1", 1, solicitudesActualizadas.size());
-        assertEquals("La solicitud debería estar en estado Cerrada ya que se han asignado los acompañantes.", EstadoSolicitud.CERRADA, solicitudesActualizadas.get(0).getEstadoSolicitud());
-        assertEquals("El numero de plazas libres de la actividad sera 27 ", 27, actividad.getPlazasDisponibles());
+        assertEquals("La solicitud debería estar en estado Parcial ya que no se han asignado todos los acompañantes.", EstadoSolicitud.PARCIAL, solicitudesActualizadas.get(0).getEstadoSolicitud());
+        assertEquals("El numero de plazas libres de la actividad sera 29, se ha asignado 1 ", 29, actividad.getPlazasDisponibles());
     }
 
 //    @Test

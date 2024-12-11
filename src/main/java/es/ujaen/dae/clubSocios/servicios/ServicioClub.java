@@ -54,11 +54,11 @@ public class ServicioClub {
         return repositorioTemporada.obtenerActividadesDeTemporada(id);
     }
 
-    public void crearTemporada(Socio dir, @Valid Temporada temporada) {
+    public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
         comprobarDireccion(dir);
 
         repositorioTemporada.crear(temporada);
-        //return temporada;
+        return temporada;
     }
 
     public void crearSocio(@Valid Socio socio) {
@@ -70,7 +70,7 @@ public class ServicioClub {
     }
 
     @Transactional
-    public void crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
+    public Actividad crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
         comprobarDireccion(dir);
 
         var temporada = repositorioTemporada.buscarPorId(temporadaId).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + temporadaId + " no encontrada"));
@@ -80,7 +80,7 @@ public class ServicioClub {
 
         repositorioActividad.guardarActividad(actividad);
 
-        //return actividad;
+        return actividad;
     }
 
 //    /**
@@ -137,6 +137,7 @@ public class ServicioClub {
     public Solicitud procesarInscripcion(Socio socio, int numAcompanantes, boolean administrador, Actividad actividad){
         Solicitud solicitud = actividad.solicitarInscripcion(socio, numAcompanantes, administrador);
         repositorioActividad.guardarSolicitud(solicitud);
+        actividad.agregarSolicitud(solicitud);
         repositorioActividad.actualizar(actividad);
         return solicitud;
     }
@@ -151,12 +152,12 @@ public class ServicioClub {
      * @param solicitud   solicitud a la que la dirección va a asignar la plaza, si se puede.
      */
     @Transactional
-    public void asignarPlazasFinal(Socio dir, Long actividadId, @Valid Solicitud solicitud, Socio socio) {
+    public void asignarPlazasFinal(Socio dir, Long actividadId, @Valid Solicitud solicitud) {
         comprobarDireccion(dir);
         var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
 
         actividad.asignarPlazasFinal(solicitud);
-        repositorioActividad.guardarActividad(actividad);
+        repositorioActividad.actualizar(actividad);
     }
 
 //
