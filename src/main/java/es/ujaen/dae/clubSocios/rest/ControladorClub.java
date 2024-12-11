@@ -40,13 +40,13 @@ public class ControladorClub {
 
     //Crear una temporada (admin)
     @PostMapping("/temporadas")
-    public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
+    public ResponseEntity<DTOTemporada> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
         try{
             servicioClub.crearTemporada(direccion, mapeador.entidad(dtoTemporada));
         } catch (TemporadaYaRegistrada e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.ok(dtoTemporada);
     }
 
     @GetMapping("/temporadas/{anio}")
@@ -61,13 +61,13 @@ public class ControladorClub {
 
     //Crear socio (todos)
     @PostMapping("/socios")
-    public ResponseEntity<Void> nuevoSocio(@RequestBody DTOSocio dtoSocio) {
+    public ResponseEntity<DTOSocio> nuevoSocio(@RequestBody DTOSocio dtoSocio) {
         try {
             servicioClub.crearSocio(mapeador.entidad(dtoSocio));
         } catch (SocioYaRegistrado socioYaRegistrado) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.ok(dtoSocio);
     }
 
     @GetMapping("/socios/{email}")
@@ -122,12 +122,13 @@ public class ControladorClub {
 
     //Solicitar participación en una actividad (user)
     @PostMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
-    public ResponseEntity<Void> crearSolicitud(@PathVariable int anio, @PathVariable Long idact, @RequestBody DTOSocio dtoSocio, @RequestParam int numAcom) {
+    public ResponseEntity<DTOSolicitud> crearSolicitud(@PathVariable int anio, @PathVariable Long idact, @RequestBody DTOSocio dtoSocio, @RequestParam int numAcom) {
+        Solicitud solicitud;
         try {
             servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
             servicioClub.login(dtoSocio.id(), dtoSocio.claveAcceso()).orElseThrow(SocioNoExiste::new);
-            servicioClub.registrarSolicitud(direccion, mapeador.entidad(dtoSocio), idact, numAcom);
+            solicitud = servicioClub.registrarSolicitud(direccion, mapeador.entidad(dtoSocio), idact, numAcom);
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SocioNoExiste s) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (FueraDePlazo | NoHayPlazas e) {
@@ -136,13 +137,57 @@ public class ControladorClub {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.ok(mapeador.dto(solicitud));
+    }
+
+    //Modificar solicitud (user)
+    @PutMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
+    public ResponseEntity<DTOSolicitud> modificarSolicitud(@PathVariable int anio, @PathVariable Long idact, @RequestBody DTOSolicitud dtoSolicitud, @RequestParam int nuevosAcom) {
+        Solicitud solicitud;
+        try {
+            Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
+            Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
+
+            solicitud = servicioClub.revisarSolicitudes(direccion, idact)
+                                                .stream()
+                                                .filter(s -> s.getSolicitudId().equals(dtoSolicitud.id()))
+                                                .findAny()
+                                                .orElseThrow(SolicitudNoExiste::new);
+
+            solicitud = servicioClub.modificarSolicitud(solicitud, nuevosAcom);
+
+        } catch (TemporadaNoEncontrada | ActividadNoEncontrada e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok(mapeador.dto(solicitud));
+    }
+
+    //Borrar solicitud (user)
+    @DeleteMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
+    public ResponseEntity<Void> borrarSolicitud(@PathVariable int anio, @PathVariable Long idact, @RequestBody DTOSolicitud dtoSolicitud, @RequestBody DTOSocio dtoSocio) {
+        try {
+            Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
+            Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
+
+            Solicitud solicitud = servicioClub.revisarSolicitudes(direccion, idact)
+                                    .stream()
+                                    .filter(s -> s.getSolicitudId().equals(dtoSolicitud.id()))
+                                    .findAny()
+                                    .orElseThrow(SolicitudNoExiste::new);
+            Socio socio = mapeador.entidad(dtoSocio);
+            servicioClub.borrarSolicitud(socio, solicitud.getSolicitudId());
+
+        } catch (TemporadaNoEncontrada | ActividadNoEncontrada e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     //Obtener solicitudes de una actividad
     @GetMapping("/temporadas/{id}/actividades/{idact}/solicitudes")
     public ResponseEntity<List<DTOSolicitud>> obtenerSolicitudesActividad(@PathVariable Long id, @PathVariable Long idact) {
-        try{
+        try {
             Temporada temporada = servicioClub.buscarTemporada(id).orElseThrow(() -> new TemporadaNoEncontrada(""));
             Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada e) {
@@ -153,18 +198,21 @@ public class ControladorClub {
         return ResponseEntity.ok(solicitudes.stream().map(s -> mapeador.dto(s)).toList());
     }
 
-    //Modificar solicitud (user)
-    @PutMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
-    public ResponseEntity<DTOSolicitud> modificarSolicitud(@PathVariable int anio, @PathVariable Long idact, @RequestBody DTOSolicitud dtoSolicitud) {
+    //Obtener solicitudes de un socio determinado a una actividad
+    @GetMapping("/temporadas/{id}/actividades/{idact}/solicitudes")
+    public ResponseEntity<List<DTOSolicitud>> obtenerSolicitudesActividad(@PathVariable Long id, @PathVariable Long idact, @RequestParam String socioId) {
         try {
-            Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
+            Temporada temporada = servicioClub.buscarTemporada(id).orElseThrow(() -> new TemporadaNoEncontrada(""));
             Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
-            //Queda por hacer un poco
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-        return ResponseEntity.ok(dtoSolicitud);
+        List<Solicitud> solicitudes;
+        solicitudes = servicioClub.revisarSolicitudes(direccion, idact);
+        return ResponseEntity.ok(solicitudes.stream()
+                                            .map(s -> mapeador.dto(s))
+                                            .filter(s-> s.idSocio().equals(socioId))
+                                            .toList());
     }
 
 }

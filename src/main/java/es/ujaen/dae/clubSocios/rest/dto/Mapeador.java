@@ -68,7 +68,6 @@ public class Mapeador {
     }
 
     ///Por último, solicitudes
-
     public DTOSolicitud dto(Solicitud solicitud) {
         return new DTOSolicitud(solicitud.getSolicitudId(),
                                 solicitud.getNumAcompanantes(),

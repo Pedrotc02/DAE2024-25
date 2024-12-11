@@ -49,28 +49,27 @@ public class ServicioClub {
     public Optional<Actividad> buscarActividad(Long id){
         return repositorioActividad.buscarPorId(id);
     }
-
     public List<Actividad> obtenerActividadesTemporada(Long id) {
         return repositorioTemporada.obtenerActividadesDeTemporada(id);
     }
 
-    public void crearTemporada(Socio dir, @Valid Temporada temporada) {
+    public Temporada crearTemporada(Socio dir, @Valid Temporada temporada) {
         comprobarDireccion(dir);
 
         repositorioTemporada.crear(temporada);
-        //return temporada;
+        return temporada;
     }
 
-    public void crearSocio(@Valid Socio socio) {
+    public Socio crearSocio(@Valid Socio socio) {
         if (repositorioSocio.buscarPorId(socio.getSocioId()).isPresent()) {
             throw new SocioYaRegistrado();
         }
         repositorioSocio.crear(socio);
-        //return socio;
+        return socio;
     }
 
     @Transactional
-    public void crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
+    public Actividad crearActividad(Socio dir, Long temporadaId, Actividad actividad) {
         comprobarDireccion(dir);
 
         var temporada = repositorioTemporada.buscarPorId(temporadaId).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + temporadaId + " no encontrada"));
@@ -80,7 +79,7 @@ public class ServicioClub {
 
         repositorioActividad.guardarActividad(actividad);
 
-        //return actividad;
+        return actividad;
     }
 
     /**
@@ -93,13 +92,13 @@ public class ServicioClub {
      * @param actividadId identificador de la actividad en la que se meterá la solicitud.
      */
     @Transactional
-    public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
+    public Solicitud registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
         comprobarDireccion(dir);
 
         var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
 
         repositorioActividad.guardarActividad(actividad);
-        actividad.solicitarInscripcion(socio, numAcom);
+        return actividad.solicitarInscripcion(socio, numAcom);
     }
 
     public Optional<Socio> login(@Email String email, String clave) {
@@ -208,7 +207,14 @@ public class ServicioClub {
         }
     }
 
-    public void guardarActividad(Actividad actividad) {
-        repositorioActividad.guardarActividad(actividad);
+    public Solicitud modificarSolicitud(Solicitud solicitud, int nuevoNumAcom) {
+        solicitud.modificarNumAcompanantes(nuevoNumAcom);
+        return solicitud;
     }
+
+    public void borrarSolicitud(Socio socio, String idSolicitud) {
+        socio.borrarSolicitud(idSolicitud);
+    }
+
+
 }
