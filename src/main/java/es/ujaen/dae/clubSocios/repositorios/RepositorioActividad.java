@@ -74,8 +74,7 @@ public class RepositorioActividad {
     }
 
 
-    @Transactional
-    public void guardarSolicitud(String socioId, Solicitud solicitud, Actividad actividad) {
+    public void guardarSolicitud(Solicitud solicitud) {
         em.persist(solicitud);
     }
 

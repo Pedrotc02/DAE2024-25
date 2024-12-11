@@ -74,11 +74,11 @@ public class TestActividad {
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         var socio2 = new Socio("tomas@gmail.com", "Tomás", "A1 A2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
-        actividad.solicitarInscripcion(socio1, 3);
-        actividad.solicitarInscripcion(socio2, 3);
+        actividad.solicitarInscripcion(socio1, 3, false);
+        actividad.solicitarInscripcion(socio2, 3, false);
 
         assertEquals("Debe haber 2 solicitudes en la actividad", 2, actividad.getSolicitudes().size());
-        assertThatThrownBy(() -> actividad.solicitarInscripcion(socio1, 4)).isInstanceOf(SolicitudYaRealizada.class);
+        assertThatThrownBy(() -> actividad.solicitarInscripcion(socio1, 4, false)).isInstanceOf(SolicitudYaRealizada.class);
     }
 
     /**
@@ -97,23 +97,23 @@ public class TestActividad {
         var actividad1 = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 4, LocalDate.parse("2024-10-30"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-16"));
 
         assertThatThrownBy(
-                () -> actividad1.solicitarInscripcion(socio1, 4)
+                () -> actividad1.solicitarInscripcion(socio1, 4, false)
         ).isExactlyInstanceOf(FueraDePlazo.class);
 
         var actividad2 = new Actividad("Clases de flamenco", "Aqui se dara clases de flamenco", 35, 0, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
         assertThatThrownBy(() ->
-                actividad2.solicitarInscripcion(socio1, 4)
+                actividad2.solicitarInscripcion(socio1, 4, false)
         ).isInstanceOf(NoHayPlazas.class);
 
         var actividad3 = new Actividad("Clases de informática", "Aqui se dara clases de informática", 25, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
 
         assertDoesNotThrow(() ->
-                actividad3.solicitarInscripcion(socio1, 4)
+                actividad3.solicitarInscripcion(socio1, 4, false)
         );
 
         assertThatThrownBy(() ->
-                actividad3.solicitarInscripcion(socio1, 2)
+                actividad3.solicitarInscripcion(socio1, 2, false)
         ).isInstanceOf(SolicitudYaRealizada.class);
 
 

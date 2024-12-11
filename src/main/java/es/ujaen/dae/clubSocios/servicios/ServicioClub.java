@@ -124,6 +124,14 @@ public class ServicioClub {
         return actividad.revisarSolicitudes();
     }
 
+    @Transactional
+    public Solicitud procesarInscripcion(Socio socio, int numAcompanantes, boolean administrador, Actividad actividad){
+        Solicitud solicitud = actividad.solicitarInscripcion(socio, numAcompanantes, administrador);
+        repositorioActividad.guardarSolicitud(solicitud);
+        repositorioActividad.actualizar(actividad);
+        return solicitud;
+    }
+
     /**
      * Asignación de plazas al final del período de inscripción de manera manual llevada a cabo por la dirección.
      * Si la solicitud no se encuentra entre las solicitudes de la actividad, lanza la correspondiente excepción.
@@ -231,8 +239,4 @@ public class ServicioClub {
         repositorioActividad.guardarActividad(actividad);
     }
 
-    public void guardarSolicitud(Solicitud solicitud, Socio socio, Actividad actividad) {
-        actividad.agregarSolicitud(solicitud);
-        repositorioActividad.guardarSolicitud(socio.getSocioId(), solicitud, actividad);
-    }
 }

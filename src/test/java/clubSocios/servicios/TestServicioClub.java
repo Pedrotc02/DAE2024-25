@@ -217,10 +217,7 @@ public class TestServicioClub {
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-09"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        var solicitud = new Solicitud(socio1, 3);
-
-        servicio.guardarSolicitud(solicitud, socio1, actividad);
-        actividad.agregarSolicitud(solicitud);
+        var solicitud = servicio.procesarInscripcion(socio1, 3, true, actividad);
 
         servicio.asignarPlazasFinal(direccion, actividad.getId(), solicitud, socio1);
 

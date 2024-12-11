@@ -94,8 +94,8 @@ public class Actividad {
      * @param socio socio que realiza la solicitud en la actividad
      * @param numAcompanantes numero de acompañantes que llevará el socio
      */
-    public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
-        if (!estaEnPeriodoInscripcion()) {
+    public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes, boolean administrador) {
+        if (!estaEnPeriodoInscripcion() && !administrador) {
             throw new FueraDePlazo();
         }
 
