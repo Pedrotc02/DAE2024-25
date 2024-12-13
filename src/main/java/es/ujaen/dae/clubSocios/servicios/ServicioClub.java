@@ -101,11 +101,25 @@ public class ServicioClub {
         return actividad.solicitarInscripcion(socio, numAcom);
     }
 
+    /*
     public Optional<Socio> login(@Email String email, String clave) {
         if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
             return Optional.of(EJEMPLO_SOCIO);
 
         return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
+    }
+    */
+
+    /**
+     * Ya no hay login, ahora se hace por SpringSecurity
+     * @param email identificador único de un usuario
+     * @return devuelve un optional de usuario que comprobaremos en el controlador rest
+     */
+    public Optional<Socio> socio(@Email String email) {
+        if (email.equals(EJEMPLO_SOCIO.getSocioId())) {
+            return Optional.of(EJEMPLO_SOCIO);
+        }
+        return repositorioSocio.buscarPorId(email);
     }
 
     public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {

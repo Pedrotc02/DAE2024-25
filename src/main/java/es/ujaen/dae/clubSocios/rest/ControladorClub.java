@@ -6,6 +6,7 @@ import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import es.ujaen.dae.clubSocios.rest.dto.*;
 import es.ujaen.dae.clubSocios.entidades.Socio;
+import es.ujaen.dae.clubSocios.security.Autenticacion;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 
 import jakarta.annotation.PostConstruct;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -26,11 +28,13 @@ public class ControladorClub {
     @Autowired
     ServicioClub servicioClub;
 
+    @Autowired
+    Autenticacion autenticacion;
     Socio direccion;
 
     @PostConstruct
     void loginDireccion(){
-        direccion = servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new);
+        direccion = servicioClub.("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new);
     }
 
     // Si hay alguna excepción de bean validation, salta el handler
@@ -40,13 +44,13 @@ public class ControladorClub {
 
     //Crear una temporada (admin)
     @PostMapping("/temporadas")
-    public ResponseEntity<DTOTemporada> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
+    public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
         try{
             servicioClub.crearTemporada(direccion, mapeador.entidad(dtoTemporada));
         } catch (TemporadaYaRegistrada e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return ResponseEntity.ok(dtoTemporada);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/temporadas/{anio}")
@@ -61,13 +65,13 @@ public class ControladorClub {
 
     //Crear socio (todos)
     @PostMapping("/socios")
-    public ResponseEntity<DTOSocio> nuevoSocio(@RequestBody DTOSocio dtoSocio) {
+    public ResponseEntity<Void> nuevoSocio(@RequestBody DTOSocio dtoSocio) {
         try {
             servicioClub.crearSocio(mapeador.entidad(dtoSocio));
         } catch (SocioYaRegistrado socioYaRegistrado) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return ResponseEntity.ok(dtoSocio);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping("/socios/{email}")
@@ -122,9 +126,16 @@ public class ControladorClub {
 
     //Solicitar participación en una actividad (user)
     @PostMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
-    public ResponseEntity<DTOSolicitud> crearSolicitud(@PathVariable int anio, @PathVariable Long idact, @RequestBody DTOSocio dtoSocio, @RequestParam int numAcom) {
+    public ResponseEntity<DTOSolicitud> crearSolicitud(@PathVariable int anio, @PathVariable Long idact,
+                                                       @RequestBody DTOSocio dtoSocio, @RequestParam int numAcom,
+                                                       Principal socioAutenticado) {
         Solicitud solicitud;
         try {
+            //Antes de nada, voy a ver si lo solicita alguien logeado, porque si no no tiene sentido buscar nada.
+            Socio socio = servicioClub.socio(socioAutenticado.getName()).orElseThrow(
+
+            );
+
             servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
             servicioClub.login(dtoSocio.id(), dtoSocio.claveAcceso()).orElseThrow(SocioNoExiste::new);
