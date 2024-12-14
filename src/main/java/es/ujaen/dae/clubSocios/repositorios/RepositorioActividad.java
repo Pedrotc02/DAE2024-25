@@ -35,7 +35,16 @@ public class RepositorioActividad {
         return Optional.ofNullable(em.find(Actividad.class, id));
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Actividad> buscarPorNombre(String nombre) {
+        return em.createQuery("select a from Actividad a where " +
+                        "a.titulo like ?1 ", Actividad.class)
+                .setParameter(1, "%" + nombre + "%")
+                .getResultList();
+    }
+
     public void guardarActividad(Actividad actividad) {
+
         try {
             em.persist(actividad);
         } catch (DuplicateKeyException duplicateKeyException) {
@@ -74,7 +83,7 @@ public class RepositorioActividad {
     }
 
 
-    public void guardarSolicitud(Solicitud solicitud) {
+    public void guardarSolicitud(Solicitud solicitud, Actividad actividad) {
         em.persist(solicitud);
     }
 
