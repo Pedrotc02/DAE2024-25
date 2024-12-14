@@ -149,6 +149,7 @@ public class ServicioClub {
 
     @Transactional
     public Solicitud procesarInscripcion(Socio socio, int numAcompanantes, boolean administrador, Actividad actividad){
+
         Solicitud solicitud = actividad.solicitarInscripcion(socio, numAcompanantes, administrador);
         actividad.agregarSolicitud(solicitud);
         repositorioActividad.guardarSolicitud(solicitud, actividad);
@@ -174,12 +175,12 @@ public class ServicioClub {
         repositorioActividad.actualizar(actividad);
     }
 
-
-    public void asignarPlazasFinInscripcion(@Valid Socio dir, Long actividadId) {
+    @Transactional
+    public void asignarPlazasFinInscripcion(@Valid Socio dir, Long actividadId, boolean administrador) {
         comprobarDireccion(dir);
         var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
 
-        actividad.asignarPlazasFinInscripcion();
+        actividad.asignarPlazasFinInscripcion(administrador);
         repositorioActividad.actualizar(actividad);
     }
 
@@ -202,66 +203,34 @@ public class ServicioClub {
         }
     }
 
-    /* Operacion concurrente con bloqueo optimista */
-//    @Transactional
-//    public void asignarUltimaPlaza(@Valid Socio socio, Long actividadId) {
-//        boolean plazaAsignada = false;
-//
-//        while (!plazaAsignada) {
-//            try {
-//                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
-//                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
-//
-//                if (!actividad.hayPlaza()) {
-//                    throw new NoHayPlazas("No hay plazas disponibles para asignar");
-//                }
-//                Solicitud nuevaSolicitud = actividad.solicitarInscripcion(socio, 0); // Sin acompañantes
-//                // Check si la solitud no ha sido ya realizada
-//                repositorioActividad.guardarSolicitud(socio.getSocioId(), nuevaSolicitud, actividadId);
-//                repositorioActividad.actualizar(actividad);
-//
-//                plazaAsignada = true; // Salir del bucle si no hay conflicto
-//            } catch (OptimisticLockingFailureException e) {
-//                // Si hay un conflicto, reintentar cargando el estado actualizado
-//            }
-//        }
-//    }
+    @Transactional
+    public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
+        comprobarDireccion(dir);
 
-    //TODO::Unir funcionalidad registrarSolicitud - bloqueos
-//    @Transactional
-//    public void registrarSolicitud(Socio dir, @Valid Socio socio, Long actividadId, int numAcom) {
-//        comprobarDireccion(dir);
-//
-//        boolean solicitudRegistrada = false;
-//        int maxIntentos = 5;
-//        int intentos = 0;
-//
-//        while (!solicitudRegistrada && intentos < maxIntentos) {
-//            try {
-//                // Cargar la actividad
-//                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
-//                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
-//
-//                // Guardar los cambios
-//                actividad.solicitarInscripcion(socio, numAcom);
-//                repositorioActividad.guardarActividad(actividad);
-//
-//
-//                solicitudRegistrada = true; // Salir del bucle si no hay conflicto
-//
-//            } catch (OptimisticLockingFailureException e) {
-//                intentos++;
-//                if (intentos >= maxIntentos) {
-//                    throw new RuntimeException("No se pudo registrar la solicitud después de " + maxIntentos + " intentos debido a conflictos de concurrencia.");
-//                }
-//                // Reintentar automáticamente
-//            }
-//        }
-//    }
+        boolean solicitudRegistrada = false;
+        int maxIntentos = 5;
+        int intentos = 0;
+
+        while (!solicitudRegistrada && intentos < maxIntentos) {
+            try {
+
+                Actividad actividad = repositorioActividad.buscarPorId(actividadId)
+                        .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + actividadId + " no existe."));
 
 
-    public void guardarActividad(Actividad actividad) {
-        repositorioActividad.guardarActividad(actividad);
+                procesarInscripcion(socio, numAcom, true, actividad);
+                solicitudRegistrada = true;
+
+            } catch (OptimisticLockingFailureException e) {
+                intentos++;
+                if (intentos >= maxIntentos) {
+                    throw new ConflictoDeConcurrenciaException(
+                            "No se pudo registrar la solicitud después de " + maxIntentos +
+                                    " intentos debido a conflictos de concurrencia. Intente nuevamente más tarde.");
+                }
+                // Reintentar automáticamente
+            }
+        }
     }
 
 }

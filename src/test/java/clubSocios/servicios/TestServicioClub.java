@@ -91,26 +91,40 @@ public class TestServicioClub {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
         var temporada = servicio.crearTemporada(direccion, new Temporada(2024));
-        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+
+        var socio1 = new Socio(
+                "prueba@gmail.com", "Pedro", "Apellido1 Apellido2",
+                "11111111M", "690123456", "123456", EstadoCuota.PAGADA
+        );
+
+        var actividad = new Actividad(
+                "Visita a museo", "Descripción", 15, 30,
+                LocalDate.parse("2024-12-25"),
+                LocalDate.parse("2024-10-12"),
+                LocalDate.parse("2024-12-13")
+        );
 
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
         servicio.crearSocio(socio1);
-        //servicio.registrarSolicitud(direccion,socio1, actividad.getId(), solicitud, 4);
+
+        servicio.registrarSolicitud(direccion, socio1, actividad.getId(), 4);
 
         List<Solicitud> resultadoEsperado = servicio.revisarSolicitudes(direccion, actividad.getId());
 
-        assertEquals("Hay una solicitud", 1, resultadoEsperado.size());
-        assertEquals("Es del socio creado", socio1.getSocioId(), resultadoEsperado.get(1).getSocioId());
+        assertEquals("Debe haber exactamente una solicitud registrada", 1, resultadoEsperado.size());
+        assertEquals(
+                "La solicitud debe pertenecer al socio creado",
+                socio1.getSocioId(),
+                resultadoEsperado.get(0).getSocioId()
+        );
 
-//        assertThat(servicio.actividades().get(actividad.getId().intValue() - 1)
-//                .getSolicitudes().stream()
-//                .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
-//                .size()
-//                .isEqualTo(1);
-//
-//        assertThat(servicio.solicitudes(actividad.getId()).size()).isEqualTo(1);
+        assertEquals(
+                "El número de plazas disponibles debe haberse actualizado correctamente",
+                29, // Plazas restantes (30 iniciales - 1 solicitud con 1 acompañante incluido en `4`)
+                servicio.buscarActividad(actividad.getId()).get().getPlazasDisponibles()
+        );
     }
+
 
     @Test
     @DirtiesContext
@@ -249,7 +263,7 @@ public class TestServicioClub {
         servicio.procesarInscripcion(socio1, 3, true, actividad);
         servicio.procesarInscripcion(socio2, 5, true, actividad);
 
-        servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
+        servicio.asignarPlazasFinInscripcion(direccion, actividad.getId(), true);
 
         var solicitudesActualizadas = actividad.revisarSolicitudes();
 

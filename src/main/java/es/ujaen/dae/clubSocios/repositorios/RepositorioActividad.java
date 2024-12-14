@@ -32,7 +32,14 @@ public class RepositorioActividad {
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Actividad> buscarPorId(Long id) {
-        return Optional.ofNullable(em.find(Actividad.class, id));
+        String hql = "SELECT a FROM Actividad a LEFT JOIN FETCH a.solicitudes WHERE a.id = :id";
+        return Optional.ofNullable(
+                em.createQuery(hql, Actividad.class)
+                        .setParameter("id", id)
+                        .getResultStream()
+                        .findFirst()
+                        .orElse(null)
+        );
     }
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

@@ -168,9 +168,9 @@ public class Actividad {
      * ya que si sigue habiendo plazas, deberían haber sido asignadas todas las de este tipo de solicitudes.
      * Por tanto, sólo habrá pendientes y cerradas, entonces si se intenta acceder a una solicitud cerrada se pasará a la siguiente hasta que haya una pendiente
      */
-    public void asignarPlazasFinInscripcion() {
+    public void asignarPlazasFinInscripcion(boolean administrador) {
 
-        if (estado() != EstadoActividad.ABIERTA)
+        if (estado() != EstadoActividad.ABIERTA || !administrador)
             throw new FueraDePlazo();
 
         if (!hayPlaza())
