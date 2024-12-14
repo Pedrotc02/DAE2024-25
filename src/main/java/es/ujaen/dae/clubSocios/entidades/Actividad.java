@@ -170,7 +170,7 @@ public class Actividad {
      */
     public void asignarPlazasFinInscripcion(boolean administrador) {
 
-        if (estado() != EstadoActividad.ABIERTA || !administrador)
+        if (estado() != EstadoActividad.ABIERTA && !administrador)
             throw new FueraDePlazo();
 
         if (!hayPlaza())
@@ -178,11 +178,11 @@ public class Actividad {
 
         solicitudes.stream()
                    .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
-                   .forEach(solicitud -> asignarPlaza(solicitud));
+                   .forEach(this::asignarPlaza);
 
         solicitudes.stream()
                    .filter(s -> !s.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza())
-                   .forEach(solicitud -> asignarPlaza(solicitud));
+                   .forEach(this::asignarPlaza);
     }
 
     /**

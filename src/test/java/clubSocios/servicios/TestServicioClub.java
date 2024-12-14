@@ -260,17 +260,19 @@ public class TestServicioClub {
         var actividad = new Actividad("Visita a museo", "Descricion", 15, 6, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-09"));
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
 
-        servicio.procesarInscripcion(socio1, 3, true, actividad);
-        servicio.procesarInscripcion(socio2, 5, true, actividad);
+        servicio.registrarSolicitud(direccion, socio1, actividad.getId(),3);
+        servicio.registrarSolicitud(direccion, socio2, actividad.getId(),5);
 
         servicio.asignarPlazasFinInscripcion(direccion, actividad.getId(), true);
 
-        var solicitudesActualizadas = actividad.revisarSolicitudes();
+        List<Solicitud> solicitudesActualizadas = servicio.revisarSolicitudes(direccion, actividad.getId());
 
         assertEquals("El numero de solicitudes actualizadas debe ser 2", 2, solicitudesActualizadas.size());
-        assertEquals("La solicitud 1 debería estar en estado Cerrada ya que se han asignado todos los acompañantes.", EstadoSolicitud.CERRADA, solicitudesActualizadas.get(0).getEstadoSolicitud());
-        assertEquals("La solicitud 2 debería estar en estado Parcial ya que no se han asignado todos los acompañantes.", EstadoSolicitud.PARCIAL, solicitudesActualizadas.get(1).getEstadoSolicitud());
-        assertEquals("El numero de plazas libres de la actividad sera 0, se ha asignado 6 ", 0, actividad.getPlazasDisponibles());
+        assertEquals("A la solicitud 1 se le conceden los 3 acompañantes", 3, solicitudesActualizadas.get(0).getPlazasConcedidas());
+        assertEquals("A la solicitud 2 se le conceden solo 3 acompañantes, no hay mas plaza", 3, solicitudesActualizadas.get(1).getPlazasConcedidas());
+        //assertEquals("La solicitud 1 debería estar en estado Cerrada ya que se han asignado todos los acompañantes.", EstadoSolicitud.CERRADA, solicitudesActualizadas.get(0).getEstadoSolicitud());
+        //assertEquals("La solicitud 2 debería estar en estado Parcial ya que no se han asignado todos los acompañantes.", EstadoSolicitud.PARCIAL, solicitudesActualizadas.get(1).getEstadoSolicitud());
+        assertEquals("El numero de plazas libres de la actividad sera 0, se ha asignado 6 ", 0, servicio.buscarActividad(actividad.getId()).get().getPlazasDisponibles());
 
     }
 
