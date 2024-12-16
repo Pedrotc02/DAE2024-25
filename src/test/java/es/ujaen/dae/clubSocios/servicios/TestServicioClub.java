@@ -1,4 +1,4 @@
-package clubSocios.servicios;
+package es.ujaen.dae.clubSocios.servicios;
 
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Socio;

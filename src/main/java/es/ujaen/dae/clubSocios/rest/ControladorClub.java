@@ -29,19 +29,20 @@ public class ControladorClub {
     Socio direccion;
 
     @PostConstruct
-    void loginDireccion(){
+    void loginDireccion() {
         direccion = servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new);
     }
 
     // Si hay alguna excepción de bean validation, salta el handler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(ConstraintViolationException.class)
-    public void mapeadoExcepcionConstraintViolationException() {}
+    public void mapeadoExcepcionConstraintViolationException() {
+    }
 
     //Crear una temporada (admin)
     @PostMapping("/temporadas")
     public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
-        try{
+        try {
             servicioClub.crearTemporada(direccion, mapeador.entidad(dtoTemporada));
         } catch (TemporadaYaRegistrada e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -52,7 +53,7 @@ public class ControladorClub {
     @GetMapping("/temporadas/{anio}")
     public ResponseEntity<DTOTemporada> buscarTemporada(@PathVariable int anio) {
         try {
-            Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(()-> new TemporadaNoEncontrada("Temporada " + anio + " no encontrada"));
+            Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + anio + " no encontrada"));
             return ResponseEntity.ok(mapeador.dto(temporada));
         } catch (TemporadaNoEncontrada e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -72,10 +73,10 @@ public class ControladorClub {
 
     @GetMapping("/socios/{email}")
     public ResponseEntity<DTOSocio> buscarSocio(@PathVariable String email, @RequestParam String clave) {
-        try{
+        try {
             Socio socio = servicioClub.login(email, clave).orElseThrow(SocioNoExiste::new);
             return ResponseEntity.ok(mapeador.dto(socio));
-        } catch(SocioNoExiste socioNoExiste) {
+        } catch (SocioNoExiste socioNoExiste) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -84,7 +85,7 @@ public class ControladorClub {
     @PostMapping("/temporadas/{anio}/actividades")
     public ResponseEntity<DTOActividad> nuevaActividad(@PathVariable int anio, @RequestBody DTOActividad dtoActividad) {
         Temporada temporada;
-        try{
+        try {
             temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + anio + " no encontrada"));
         } catch (TemporadaNoEncontrada e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -110,7 +111,7 @@ public class ControladorClub {
     @GetMapping("/temporadas/{anio}/actividades/{idact}")
     public ResponseEntity<DTOActividad> buscarActividad(@PathVariable int anio, @PathVariable Long idact) {
         Actividad actividad;
-        try{
+        try {
             Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + anio + " no encontrada"));
             actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
         } catch (ActividadNoEncontrada | TemporadaNoEncontrada e) {
@@ -142,7 +143,7 @@ public class ControladorClub {
     //Obtener solicitudes de una actividad
     @GetMapping("/temporadas/{id}/actividades/{idact}/solicitudes")
     public ResponseEntity<List<DTOSolicitud>> obtenerSolicitudesActividad(@PathVariable Long id, @PathVariable Long idact) {
-        try{
+        try {
             Temporada temporada = servicioClub.buscarTemporada(id).orElseThrow(() -> new TemporadaNoEncontrada(""));
             Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada e) {
