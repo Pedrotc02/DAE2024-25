@@ -2,6 +2,7 @@ package clubSocios.servicios;
 
 import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.rest.dto.DTOTemporada;
+import es.ujaen.dae.clubSocios.rest.dto.Mapeador;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,11 +34,14 @@ public class TestControladorClub {
     @Autowired
     private ServicioClub servicioClub;
 
+    private Mapeador mapeador;
+
     private TestRestTemplate testRestTemplate;
     private String baseUrl;
 
     @BeforeEach
     void setUp() {
+        mapeador = new Mapeador();
         baseUrl = "http://localhost:" + localPort;
         var restTemplateBuilder = new RestTemplateBuilder().rootUri(baseUrl);
         testRestTemplate = new TestRestTemplate(restTemplateBuilder);
@@ -96,7 +100,19 @@ public class TestControladorClub {
         assertEquals("respuesta", HttpStatus.CONFLICT, response.getStatusCode());
     }
 
-    // 4. Obtener un socio (todos)
+    @Test
+    @DirtiesContext
+    void testObtenerSocio() {
+        DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A", "690123456", "123456", EstadoCuota.PAGADA);
+        servicioClub.crearSocio(mapeador.entidad(dtoSocio));
+
+        ResponseEntity<DTOSocio> response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+                .getForEntity(baseUrl + "/clubsocios/socios/prueba@gmail.com?clave=123456", DTOSocio.class);
+
+        assertEquals("status", HttpStatus.OK, response.getStatusCode());
+        assertEquals("email", dtoSocio.id(), Objects.requireNonNull(response.getBody()).id());
+    }
+
     // 5. Crear una actividad (admin)
     // 6. Obtener actividades de una temporada (todos)
     // 7. Obtener una actividad (todos)
