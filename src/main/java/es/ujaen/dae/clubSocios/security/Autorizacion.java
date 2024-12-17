@@ -54,7 +54,7 @@ public class Autorizacion {
                             .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
                 .and().csrf(csrf -> csrf.disable())
                       .sessionManagement(sM -> sM.disable())
-                      .httpBasic(hB -> hB.disable())
+                      .httpBasic(Customizer.withDefaults())
                 .build();
     }
 }

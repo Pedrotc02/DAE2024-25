@@ -54,6 +54,9 @@ public class TestControladorClub {
     @Test
     @DirtiesContext
     void testCrearTemporada() {
+        Socio direccion = new Socio("direccion@clubsocios.es", "direccion",
+                "-", "99999999Z", "953897654", "serviceSecret", EstadoCuota.PAGADA);
+        servicioClub.crearSocio(direccion);
         int anio = 2025;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
 
