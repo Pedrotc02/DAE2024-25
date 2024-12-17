@@ -76,9 +76,9 @@ public class Actividad {
     }
 
     public List<Solicitud> revisarSolicitudes() {
-        if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
-            throw new FechaNoValida();
-        }
+//        if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
+//            throw new FechaNoValida();
+//        }
 
         return solicitudes.stream()
                 .sorted(Comparator.comparing(Solicitud::getFechaSolicitud))
