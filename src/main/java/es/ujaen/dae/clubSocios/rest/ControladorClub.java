@@ -128,7 +128,7 @@ public class ControladorClub {
             servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
             servicioClub.login(dtoSocio.id(), dtoSocio.claveAcceso()).orElseThrow(SocioNoExiste::new);
-            //servicioClub.registrarSolicitud(direccion, mapeador.entidad(dtoSocio), idact, numAcom);
+            servicioClub.registrarSolicitud(direccion, mapeador.entidad(dtoSocio), idact, numAcom);
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SocioNoExiste s) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (FueraDePlazo | NoHayPlazas e) {
@@ -141,11 +141,11 @@ public class ControladorClub {
     }
 
     //Obtener solicitudes de una actividad
-    @GetMapping("/temporadas/{id}/actividades/{idact}/solicitudes")
-    public ResponseEntity<List<DTOSolicitud>> obtenerSolicitudesActividad(@PathVariable Long id, @PathVariable Long idact) {
+    @GetMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
+    public ResponseEntity<List<DTOSolicitud>> obtenerSolicitudesActividad(@PathVariable int anio, @PathVariable Long idact) {
         try {
-            Temporada temporada = servicioClub.buscarTemporada(id).orElseThrow(() -> new TemporadaNoEncontrada(""));
-            Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
+            servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
+            servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

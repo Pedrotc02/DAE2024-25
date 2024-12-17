@@ -1,6 +1,7 @@
 package es.ujaen.dae.clubSocios.rest;
 
 import es.ujaen.dae.clubSocios.entidades.Temporada;
+import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.rest.dto.*;
 import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -19,6 +22,7 @@ import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static org.springframework.test.util.AssertionErrors.assertEquals;
@@ -209,10 +213,6 @@ public class TestControladorClub {
         assertEquals("status", HttpStatus.CREATED, response.getStatusCode());
     }
 
-    /**
-     * No va, creo que es por los credenciales
-     *
-     * */
      @Test
      @DirtiesContext void testObtenerSolicitudesActividad() {
          int anio = 2024;
@@ -231,21 +231,23 @@ public class TestControladorClub {
          "690123456", "serviceSecret", EstadoCuota.PAGADA);
          servicioClub.crearSocio(mapeador.entidad(dtoSocio));
 
-         testRestTemplate//.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+         ResponseEntity<Void> postResponse = testRestTemplate//.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
          .postForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes?numAcom=2", dtoSocio, Void.class);
 
-         ResponseEntity<DTOSolicitud[]> response = testRestTemplate //.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-         .getForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes", DTOSolicitud[].class);
+         assertEquals("Estado post", HttpStatus.CREATED, postResponse.getStatusCode());
 
-         assertEquals("status", HttpStatus.OK, response.getStatusCode());
+         ResponseEntity<DTOSolicitud[]> response = testRestTemplate //.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+         .getForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/"+ dtoActividad.id() + "/solicitudes", DTOSolicitud[].class);
+
+         assertEquals("Estado get", HttpStatus.OK, response.getStatusCode());
+
          assertEquals("numero de solicitudes", 1, Objects.requireNonNull(response.getBody()).length);
      }
 
 
-    /**
-     * Tampoco va, no se por qué
      @Test
-     @DirtiesContext void testModificarSolicitud() {
+     @DirtiesContext
+     void testModificarSolicitud() {
      // Crear temporada
      int anio = 2024;
      DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
@@ -297,6 +299,5 @@ public class TestControladorClub {
      assertEquals("status", HttpStatus.OK, response.getStatusCode());
      assertEquals("numAcom", 3, Objects.requireNonNull(response.getBody()).numAcom());
      }
-     */
 
 }
