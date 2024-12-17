@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 
+import static es.ujaen.dae.clubSocios.util.UtilList.EJEMPLO_SOCIO;
+
 @RestController
 @RequestMapping("/clubsocios")
 public class ControladorClub {
@@ -30,8 +32,6 @@ public class ControladorClub {
     @Autowired
     Autenticacion autenticacion;
 
-    Socio direccion;
-
     // Si hay alguna excepción de bean validation, salta el handler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(ConstraintViolationException.class)
@@ -39,9 +39,10 @@ public class ControladorClub {
 
     //Crear una temporada (admin)
     @PostMapping("/temporadas")
-    public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
+    public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada, Principal principal) {
         try {
-            servicioClub.crearTemporada(direccion, mapeador.entidad(dtoTemporada));
+            System.out.println("Usuario autenticado nueva temporada: " + principal.getName());
+            servicioClub.crearTemporada(EJEMPLO_SOCIO, mapeador.entidad(dtoTemporada));
         } catch (TemporadaYaRegistrada e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -88,7 +89,7 @@ public class ControladorClub {
         } catch (TemporadaNoEncontrada e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        servicioClub.crearActividad(direccion, temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
+        servicioClub.crearActividad(EJEMPLO_SOCIO, temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -131,7 +132,7 @@ public class ControladorClub {
             servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
 
-            servicioClub.registrarSolicitud(direccion, socio, idact, numAcom);
+            servicioClub.registrarSolicitud(EJEMPLO_SOCIO, socio, idact, numAcom);
 
         } catch (SocioNoExiste e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -155,7 +156,7 @@ public class ControladorClub {
             Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
 
-            solicitud = servicioClub.revisarSolicitudes(direccion, idact)
+            solicitud = servicioClub.revisarSolicitudes(EJEMPLO_SOCIO, idact)
                                                 .stream()
                                                 .filter(s -> s.getSocioId().equals(emailSocio))
                                                 .findAny()
@@ -180,7 +181,7 @@ public class ControladorClub {
             Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
             Actividad actividad = servicioClub.buscarActividad(idact).orElseThrow(() -> new ActividadNoEncontrada(""));
 
-            Solicitud solicitud = servicioClub.revisarSolicitudes(direccion, idact)
+            Solicitud solicitud = servicioClub.revisarSolicitudes(EJEMPLO_SOCIO, idact)
                                     .stream()
                                     .filter(s -> s.getSocioId().equals(emailSocio))
                                     .findAny()
@@ -206,7 +207,7 @@ public class ControladorClub {
 //            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 //        }
 //        List<Solicitud> solicitudes;
-//        solicitudes = servicioClub.revisarSolicitudes(direccion, idact);
+//        solicitudes = servicioClub.revisarSolicitudes(EJEMPLO_SOCIO, idact);
 //        return ResponseEntity.ok(solicitudes.stream().map(s -> mapeador.dto(s)).toList());
 //    }
 
@@ -226,13 +227,13 @@ public class ControladorClub {
                     .getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
             if (esAdmin) {
-                solicitudes = servicioClub.revisarSolicitudes(direccion, idact)
+                solicitudes = servicioClub.revisarSolicitudes(EJEMPLO_SOCIO, idact)
                                           .stream()
                                           .toList();
             } else {
                 //Aunque sólo se devuelva la solicitud del socio, es una operación que debe hacer la dirección,
                 //por eso revisa las solicitudes ésta, y entonces devuelve al socio una lista con 1 item o 0
-                solicitudes = servicioClub.revisarSolicitudes(direccion, idact)
+                solicitudes = servicioClub.revisarSolicitudes(EJEMPLO_SOCIO, idact)
                                            .stream()
                                            .filter(s-> s.getSocioId().equals(socioId))
                                            .toList();

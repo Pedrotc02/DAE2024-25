@@ -44,7 +44,7 @@ public class Mapeador {
                          dtoSocio.apellidos(),
                          dtoSocio.dni(),
                          dtoSocio.tlf(),
-                         "",
+                         dtoSocio.claveAcceso(),
                          dtoSocio.cuota());
     }
 

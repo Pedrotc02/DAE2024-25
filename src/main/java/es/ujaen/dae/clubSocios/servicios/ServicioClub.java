@@ -51,8 +51,11 @@ public class ServicioClub {
         return repositorioActividad.buscarPorId(id);
     }
 
-    public Optional<Socio> buscarSocio(String id){
-        return repositorioSocio.buscarPorId(id);
+    public Optional<Socio> buscarSocio(String email){
+        if (EJEMPLO_SOCIO.getSocioId().equals(email))
+            return Optional.of(EJEMPLO_SOCIO);
+
+        return repositorioSocio.buscarPorId(email);
     }
 
     public List<Actividad> buscarActividadPorNombre(String nombre){

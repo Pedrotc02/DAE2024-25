@@ -20,13 +20,12 @@ public class Autorizacion {
     }
 
     @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public SecurityFilterChain autorizaciones(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity.authorizeRequests()
+        return httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sM -> sM.disable())
+                .httpBasic(httpBasic -> httpBasic.realmName("clubsocios"))
+                .authorizeRequests(auth -> auth
                 // Todos pueden crear su usuario y ver las actividades de una temporada en particular,
                 // además de buscar una temporada
                         .requestMatchers(HttpMethod.POST,"/clubsocios/socios")
@@ -52,9 +51,7 @@ public class Autorizacion {
                             .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
                         .requestMatchers(HttpMethod.GET, "/clubsocios/temporadas/{anio}/actividades/{idact}/solicitudes")
                             .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
-                .and().csrf(csrf -> csrf.disable())
-                      .sessionManagement(sM -> sM.disable())
-                      .httpBasic(Customizer.withDefaults())
+                )
                 .build();
     }
 }

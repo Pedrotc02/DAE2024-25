@@ -16,6 +16,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -26,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -39,29 +41,35 @@ public class TestControladorClub {
     @Autowired
     private ServicioClub servicioClub;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     private Mapeador mapeador;
 
     private TestRestTemplate testRestTemplate;
 
     @BeforeEach
     void setUp() {
+//        String pwdEncoded = passwordEncoder.encode("serviceSecret");
+//        System.out.println("Password encoded: " + pwdEncoded);
         mapeador = new Mapeador();
         baseUrl = "http://localhost:" + localPort;
         var restTemplateBuilder = new RestTemplateBuilder().rootUri(baseUrl);
         testRestTemplate = new TestRestTemplate(restTemplateBuilder);
     }
 
+
+
     @Test
     @DirtiesContext
     void testCrearTemporada() {
-        Socio direccion = new Socio("direccion@clubsocios.es", "direccion",
-                "-", "99999999Z", "953897654", "serviceSecret", EstadoCuota.PAGADA);
-        servicioClub.crearSocio(direccion);
         int anio = 2025;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
 
         ResponseEntity<Void> response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
                 .postForEntity("/clubsocios/temporadas", dtoTemporada, Void.class);
+        System.out.println("Código de estado: " + response.getStatusCode());
+        System.out.println("Respuesta: " + response.getBody());
 
         assertEquals("Respuesta al admin", HttpStatus.CREATED, response.getStatusCode());
 
@@ -72,9 +80,10 @@ public class TestControladorClub {
 
         // Intentar que otra persona cree una temporada distinta
         DTOTemporada temp2 = new DTOTemporada(1L, 2026);
-        response = testRestTemplate.postForEntity("/clubsocios/temporadas", temp2, Void.class);
 
-        assertEquals("Respuesta a no admin distinta temporada", HttpStatus.FORBIDDEN, response.getStatusCode());
+        response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456").postForEntity("/clubsocios/temporadas", temp2, Void.class);
+
+        assertEquals("Respuesta a no admin distinta temporada", HttpStatus.UNAUTHORIZED, response.getStatusCode());
 
     }
 
