@@ -4,6 +4,7 @@ import es.ujaen.dae.clubSocios.entidades.*;
 import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import es.ujaen.dae.clubSocios.repositorios.RepositorioSocio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,6 +12,10 @@ public class Mapeador {
 
     @Autowired
     RepositorioSocio repositorioSocio;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
 
     ///Primero la temporada
     public DTOTemporada dto(Temporada temporada){
@@ -39,8 +44,18 @@ public class Mapeador {
                          dtoSocio.apellidos(),
                          dtoSocio.dni(),
                          dtoSocio.tlf(),
-                         dtoSocio.claveAcceso(),
+                         "",
                          dtoSocio.cuota());
+    }
+
+    public Socio entidadCoded(DTOSocio dtoSocio){
+        return new Socio(dtoSocio.id(),
+                dtoSocio.nombre(),
+                dtoSocio.apellidos(),
+                dtoSocio.dni(),
+                dtoSocio.tlf(),
+                passwordEncoder.encode(dtoSocio.claveAcceso()),
+                dtoSocio.cuota());
     }
 
     ///Después, actividades
