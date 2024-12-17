@@ -66,7 +66,6 @@ public class TestServicioClub {
         assertThat(creada1.getId()).isEqualTo(1);
 
         var actividad2 = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-        servicio.crearActividad(direccion, temporada24.getTemporadaId(), actividad2);
 
         assertThatThrownBy(() -> servicio.crearActividad(direccion, temporada24.getTemporadaId(), actividad2)).isInstanceOf(ActividadYaRegistrada.class);
     }
@@ -92,26 +91,40 @@ public class TestServicioClub {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
         var temporada = servicio.crearTemporada(direccion, new Temporada(2024));
-        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
-        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
+
+        var socio1 = new Socio(
+                "prueba@gmail.com", "Pedro", "Apellido1 Apellido2",
+                "11111111M", "690123456", "123456", EstadoCuota.PAGADA
+        );
+
+        var actividad = new Actividad(
+                "Visita a museo", "Descripción", 15, 30,
+                LocalDate.parse("2024-12-25"),
+                LocalDate.parse("2024-10-12"),
+                LocalDate.parse("2024-12-13")
+        );
 
         servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
         servicio.crearSocio(socio1);
-        //servicio.registrarSolicitud(direccion,socio1, actividad.getId(), solicitud, 4);
+
+        servicio.registrarSolicitud(direccion, socio1, actividad.getId(), 4);
 
         List<Solicitud> resultadoEsperado = servicio.revisarSolicitudes(direccion, actividad.getId());
 
-        assertEquals("Hay una solicitud", 1, resultadoEsperado.size());
-        assertEquals("Es del socio creado", socio1.getSocioId(), resultadoEsperado.get(1).getSocioId());
+        assertEquals("Debe haber exactamente una solicitud registrada", 1, resultadoEsperado.size());
+        assertEquals(
+                "La solicitud debe pertenecer al socio creado",
+                socio1.getSocioId(),
+                resultadoEsperado.get(0).getSocioId()
+        );
 
-//        assertThat(servicio.actividades().get(actividad.getId().intValue() - 1)
-//                .getSolicitudes().stream()
-//                .filter(s -> s.getSocioId().equals(socio1.getSocioId())))
-//                .size()
-//                .isEqualTo(1);
-//
-//        assertThat(servicio.solicitudes(actividad.getId()).size()).isEqualTo(1);
+        assertEquals(
+                "El número de plazas disponibles debe haberse actualizado correctamente",
+                29, // Plazas restantes (30 iniciales - 1 solicitud con 1 acompañante incluido en `4`)
+                servicio.buscarActividad(actividad.getId()).get().getPlazasDisponibles()
+        );
     }
+
 
     @Test
     @DirtiesContext
@@ -199,8 +212,11 @@ public class TestServicioClub {
 
         servicio.resetearEstadoCuota(direccion);
 
-        assertEquals("El estado de cuota de los socios debe estar en Pendiente", EstadoCuota.PENDIENTE, socio1.getEstadoCuota());
-        assertEquals("El estado de cuota de los socios debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2.getEstadoCuota());
+        var socio1Actualizado = servicio.buscarSocio(socio1.getSocioId()).get();
+        var socio2Actualizado = servicio.buscarSocio(socio2.getSocioId()).get();
+
+        assertEquals("El estado de cuota de los socios debe estar en Pendiente", EstadoCuota.PENDIENTE, socio1Actualizado.getEstadoCuota());
+        assertEquals("El estado de cuota de los socios debe estar en Pendiente", EstadoCuota.PENDIENTE, socio2Actualizado.getEstadoCuota());
     }
 
     @Test
@@ -228,22 +244,38 @@ public class TestServicioClub {
         assertEquals("El numero de plazas libres de la actividad sera 29, se ha asignado 1 ", 29, actividad.getPlazasDisponibles());
     }
 
-//    @Test
-//    @DirtiesContext
-//    void testAsignarPlazasFinInscripcion(){
-//        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
-//
-//        var temporada = new Temporada(2024);
-//        servicio.crearTemporada(direccion, temporada);
-//
-//        var actividad = new Actividad("Visita a museo", "Descricion", 15, 30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
-//        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
-//
-//        servicio.asignarPlazasFinInscripcion(direccion, actividad.getId());
-//        assertEquals("skjv", 29, servicio.actividades().get(actividad.getId().intValue() -1).getPlazasDisponibles());
-//
-//    }
-//
+    @Test
+    @DirtiesContext
+    void testAsignarPlazasFinInscripcion(){
+        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+
+        var temporada = new Temporada(2024);
+        servicio.crearTemporada(direccion, temporada);
+
+        var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        servicio.crearSocio(socio1);
+        var socio2 = new Socio("prueba2@gmail.com", "Prueba", "Apellido1 Apellido2", "11211111M", "690123456", "123456", EstadoCuota.PAGADA);
+        servicio.crearSocio(socio2);
+
+        var actividad = new Actividad("Visita a museo", "Descricion", 15, 6, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-09"));
+        servicio.crearActividad(direccion, temporada.getTemporadaId(), actividad);
+
+        servicio.registrarSolicitud(direccion, socio1, actividad.getId(),3);
+        servicio.registrarSolicitud(direccion, socio2, actividad.getId(),5);
+
+        servicio.asignarPlazasFinInscripcion(direccion, actividad.getId(), true);
+
+        List<Solicitud> solicitudesActualizadas = servicio.revisarSolicitudes(direccion, actividad.getId());
+
+        assertEquals("El numero de solicitudes actualizadas debe ser 2", 2, solicitudesActualizadas.size());
+        assertEquals("A la solicitud 1 se le conceden los 3 acompañantes", 3, solicitudesActualizadas.get(0).getPlazasConcedidas());
+        assertEquals("A la solicitud 2 se le conceden solo 3 acompañantes, no hay mas plaza", 3, solicitudesActualizadas.get(1).getPlazasConcedidas());
+        //assertEquals("La solicitud 1 debería estar en estado Cerrada ya que se han asignado todos los acompañantes.", EstadoSolicitud.CERRADA, solicitudesActualizadas.get(0).getEstadoSolicitud());
+        //assertEquals("La solicitud 2 debería estar en estado Parcial ya que no se han asignado todos los acompañantes.", EstadoSolicitud.PARCIAL, solicitudesActualizadas.get(1).getEstadoSolicitud());
+        assertEquals("El numero de plazas libres de la actividad sera 0, se ha asignado 6 ", 0, servicio.buscarActividad(actividad.getId()).get().getPlazasDisponibles());
+
+    }
+
 //    @Test
 //    public void testAsignarUltimaPlazaConcurrencia() throws InterruptedException {
 //        int anioActual = LocalDate.now().getYear();
