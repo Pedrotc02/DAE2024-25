@@ -68,6 +68,7 @@ public class Actividad {
 
     public void agregarSolicitud(Solicitud solicitud) {
         solicitudes.add(solicitud);
+
     }
 
     public void quitarSolicitud(Solicitud solicitud) {
@@ -75,9 +76,9 @@ public class Actividad {
     }
 
     public List<Solicitud> revisarSolicitudes() {
-        if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
-            throw new FechaNoValida();
-        }
+//        if (estado() != EstadoActividad.PLAZO_INSCRIPCION_FINALIZADO) {
+//            throw new FechaNoValida();
+//        }
 
         return solicitudes.stream()
                 .sorted(Comparator.comparing(Solicitud::getFechaSolicitud))
@@ -93,8 +94,8 @@ public class Actividad {
      * @param socio socio que realiza la solicitud en la actividad
      * @param numAcompanantes numero de acompañantes que llevará el socio
      */
-    public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes) {
-        if (!estaEnPeriodoInscripcion()) {
+    public Solicitud solicitarInscripcion(Socio socio, @PositiveOrZero int numAcompanantes, boolean administrador) {
+        if (!estaEnPeriodoInscripcion() && !administrador) {
             throw new FueraDePlazo();
         }
 
@@ -111,8 +112,6 @@ public class Actividad {
         if (socio.getEstadoCuota().equals(EstadoCuota.PAGADA)) {
             asignarPlaza(nuevaSolicitud);
         }
-
-        agregarSolicitud(nuevaSolicitud);
 
         // Sin la línea de abajo, fallan los test de Socio (preguntar a profesor) y el de Actividad (testSolicitudInscripcionValida)
         // socio.anadirSolicitud(nuevaSolicitud);
@@ -152,7 +151,7 @@ public class Actividad {
         if (!hayPlaza())
             throw new NoHayPlazas("No hay plazas disponibles en la actividad");
 
-        if (!solicitudes.contains(solicitud))
+        if (!solicitudExiste(solicitud.getSolicitudId()))
             throw new SolicitudNoExiste();
 
         if (solicitud.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA)) {
@@ -169,9 +168,9 @@ public class Actividad {
      * ya que si sigue habiendo plazas, deberían haber sido asignadas todas las de este tipo de solicitudes.
      * Por tanto, sólo habrá pendientes y cerradas, entonces si se intenta acceder a una solicitud cerrada se pasará a la siguiente hasta que haya una pendiente
      */
-    public void asignarPlazasFinInscripcion() {
+    public void asignarPlazasFinInscripcion(boolean administrador) {
 
-        if (estado() != EstadoActividad.ABIERTA)
+        if (estado() != EstadoActividad.ABIERTA && !administrador)
             throw new FueraDePlazo();
 
         if (!hayPlaza())
@@ -179,11 +178,11 @@ public class Actividad {
 
         solicitudes.stream()
                    .filter(s -> s.getEstadoSolicitud().equals(EstadoSolicitud.PARCIAL) && hayPlaza())
-                   .forEach(solicitud -> asignarPlaza(solicitud));
+                   .forEach(this::asignarPlaza);
 
         solicitudes.stream()
                    .filter(s -> !s.getEstadoSolicitud().equals(EstadoSolicitud.CERRADA) && hayPlaza())
-                   .forEach(solicitud -> asignarPlaza(solicitud));
+                   .forEach(this::asignarPlaza);
     }
 
     /**
@@ -280,6 +279,15 @@ public class Actividad {
 
     public void setTemporada(Temporada temporada) {
         this.temporada = temporada;
+    }
+
+    public boolean solicitudExiste(String solicitudId){
+        for (int i = 0; i < solicitudes.size(); i++) {
+            if(solicitudes.get(i).getSolicitudId().equals(solicitudId)){
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -8,7 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = {
         "es.ujaen.dae.clubSocios.servicios",
-        "es.ujaen.dae.clubSocios.repositorios"
+        "es.ujaen.dae.clubSocios.repositorios",
+        "es.ujaen.dae.clubSocios.rest" 
 })
 @EntityScan(basePackages = "es.ujaen.dae.clubSocios.entidades")
 @EnableCaching

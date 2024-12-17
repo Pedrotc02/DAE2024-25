@@ -14,6 +14,8 @@ import java.util.*;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +32,28 @@ public class RepositorioActividad {
 
     @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
     public Optional<Actividad> buscarPorId(Long id) {
-        return Optional.ofNullable(em.find(Actividad.class, id));
+        String hql = "SELECT a FROM Actividad a LEFT JOIN FETCH a.solicitudes WHERE a.id = :id";
+        return Optional.ofNullable(
+                em.createQuery(hql, Actividad.class)
+                        .setParameter("id", id)
+                        .getResultStream()
+                        .findFirst()
+                        .orElse(null)
+        );
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+    public List<Actividad> buscarPorNombre(String nombre) {
+        return em.createQuery("select a from Actividad a where " +
+                        "a.titulo like ?1 ", Actividad.class)
+                .setParameter(1, "%" + nombre + "%")
+                .getResultList();
     }
 
     public void guardarActividad(Actividad actividad) {
+
         try {
             em.persist(actividad);
-            em.flush();
         } catch (DuplicateKeyException duplicateKeyException) {
             throw new ActividadYaRegistrada();
         }
@@ -72,8 +89,8 @@ public class RepositorioActividad {
                 .orElse(Collections.emptyList());
     }
 
-    @Transactional
-    public void guardarSolicitud(String socioId, Solicitud solicitud, Long actividadId) {
+
+    public void guardarSolicitud(Solicitud solicitud, Actividad actividad) {
         em.persist(solicitud);
     }
 

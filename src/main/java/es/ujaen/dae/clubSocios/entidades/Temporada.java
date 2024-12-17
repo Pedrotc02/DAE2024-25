@@ -1,10 +1,9 @@
 package es.ujaen.dae.clubSocios.entidades;
 
-import es.ujaen.dae.clubSocios.excepciones.InvalidoAnio;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class Temporada {
     @OrderBy("id ASC") // Orden ascendente por ID
     private List<Actividad> actividades;
 
-    public Temporada(){
+    public Temporada() {
         this.actividades = new ArrayList<>();
     }
 
