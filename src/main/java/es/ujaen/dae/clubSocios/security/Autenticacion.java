@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 @Service
 public class Autenticacion implements UserDetailsService {
@@ -19,12 +20,12 @@ public class Autenticacion implements UserDetailsService {
     ServicioClub servicioClub;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
-        Socio socio = servicioClub.socio(username).orElseThrow(SocioNoExiste::new);
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException{
+        Socio socio = servicioClub.buscarSocio(userName).orElseThrow(SocioNoExiste::new);
 
-        return User.withUsername(username)
+        return User.withUsername(socio.getSocioId())
                    .password(socio.getClaveAcceso())
-                   .roles(username.equals("direccion@clubsocios.es") ? "ADMIN" : "SOCIO")
+                   .roles(socio.getNombre().equals("direccion") ? "ADMIN" : "USER")
                    .build();
     }
 

@@ -1,5 +1,6 @@
 package es.ujaen.dae.clubSocios.rest;
 
+import es.ujaen.dae.clubSocios.entidades.Socio;
 import es.ujaen.dae.clubSocios.entidades.Temporada;
 import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.rest.dto.*;
@@ -56,16 +57,22 @@ public class TestControladorClub {
         int anio = 2025;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
 
-        ResponseEntity<Void> response = testRestTemplate//.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+        ResponseEntity<Void> response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
                 .postForEntity("/clubsocios/temporadas", dtoTemporada, Void.class);
 
-        assertEquals("respuesta", HttpStatus.CREATED, response.getStatusCode());
+        assertEquals("Respuesta al admin", HttpStatus.CREATED, response.getStatusCode());
 
         // Intentar crear una temporada con el mismo año
-        response = testRestTemplate//.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+        response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
                 .postForEntity("/clubsocios/temporadas", dtoTemporada, Void.class);
+        assertEquals("Respuesta al admin misma temporada", HttpStatus.CONFLICT, response.getStatusCode());
 
-        assertEquals("respuest", HttpStatus.CONFLICT, response.getStatusCode());
+        // Intentar que otra persona cree una temporada distinta
+        DTOTemporada temp2 = new DTOTemporada(1L, 2026);
+        response = testRestTemplate.postForEntity("/clubsocios/temporadas", temp2, Void.class);
+
+        assertEquals("Respuesta a no admin distinta temporada", HttpStatus.FORBIDDEN, response.getStatusCode());
+
     }
 
     @Test

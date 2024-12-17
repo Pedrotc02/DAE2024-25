@@ -147,6 +147,14 @@ public class ServicioClub {
         return actividad.revisarSolicitudes();
     }
 
+    /*
+    public List<Solicitud> obtenerSolicitudesSocioActividad(@Valid String idSocio, Long actividadId) {
+        var actividad = repositorioActividad.buscarPorId(actividadId).orElseThrow(() -> new ActividadNoEncontrada("Actividad " + actividadId + " no encontrada"));
+
+        return actividad.revisarSolicitudes().stream().filter(s -> s.getSocioId().equals(idSocio)).toList();
+    }
+    */
+
     @Transactional
     public Solicitud procesarInscripcion(Socio socio, int numAcompanantes, boolean administrador, Actividad actividad){
 
@@ -231,6 +239,14 @@ public class ServicioClub {
                 // Reintentar automáticamente
             }
         }
+    }
+
+    public void modificarSolicitud(Solicitud solicitud, int nuevoNumAcom){
+        solicitud.modificarNumAcompanantes(nuevoNumAcom);
+    }
+
+    public void borrarSolicitud(Socio socio, String idSolicitud) {
+        socio.borrarSolicitud(idSolicitud);
     }
 
 }
