@@ -135,9 +135,7 @@ public class ControladorClub {
 
             servicioClub.registrarSolicitud(EJEMPLO_SOCIO, socio, idact, numAcom);
 
-        } catch (SocioNoExiste e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SolicitudNoExiste e) {
+        } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SocioNoExiste | SolicitudNoExiste e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (FueraDePlazo | NoHayPlazas e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();

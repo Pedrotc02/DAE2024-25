@@ -467,19 +467,23 @@ public class TestControladorClub {
                 );
 
         ///Creo el socio
-        DTOSocio dtoSocio = new DTOSocio("pepfer@gmail.com", "Pepito", "Fernández", "11111111M",
-                "645367898", "pepfer", EstadoCuota.PAGADA);
+        DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
+                "690123456", "123456", EstadoCuota.PAGADA);
 
-        testRestTemplate.postForEntity( "/socios", dtoSocio, Void.class);
+        testRestTemplate.postForEntity(
+                "/socios",
+                dtoSocio,
+                DTOSocio.class
+        );
 
         int numAcom = 2;
 
         ///EL socio hace la solicitud
-        ResponseEntity<Void> response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+        ResponseEntity<DTOSolicitud> response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
                 .postForEntity(
                         "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}&numAcom={numAcom}",
                         null,
-                        Void.class,
+                        DTOSolicitud.class,
                         dtoTemporada.anio(),
                         dtoActividad.id(),
                         dtoSocio.id(),
