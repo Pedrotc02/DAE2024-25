@@ -175,8 +175,7 @@ public class ControladorClub {
     //Borrar solicitud (user/admin)
     @DeleteMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
     public ResponseEntity<Void> borrarSolicitud(@PathVariable int anio, @PathVariable Long idact,
-                                                @RequestParam String emailSocio,
-                                                Principal usuarioAutenticado) {
+                                                @RequestParam String emailSocio) {
         try {
             Socio socio = servicioClub.buscarSocio(emailSocio).orElseThrow(SocioNoExiste::new);
             Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));
