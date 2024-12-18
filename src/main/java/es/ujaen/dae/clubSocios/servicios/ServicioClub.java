@@ -120,12 +120,14 @@ public class ServicioClub {
 //
 //    }
 
+    /*
     public Optional<Socio> login(@Email String email, String clave) {
         if (EJEMPLO_SOCIO.getSocioId().equals(email) && EJEMPLO_SOCIO.getClaveAcceso().equals(clave))
             return Optional.of(EJEMPLO_SOCIO);
 
         return repositorioSocio.buscarPorId(email).filter(socio -> socio.getClaveAcceso().equals(clave));
     }
+    */
 
     public Socio actualizarEstadoCuota(Socio dir, String email, EstadoCuota estadoCuota) {
         comprobarDireccion(dir);
@@ -244,12 +246,13 @@ public class ServicioClub {
         }
     }
 
-    public void modificarSolicitud(Solicitud solicitud, int nuevoNumAcom){
+    public Solicitud modificarSolicitud(Solicitud solicitud, int nuevoNumAcom){
         solicitud.modificarNumAcompanantes(nuevoNumAcom);
+        return repositorioActividad.actualizarSolicitud(solicitud);
     }
 
-    public void borrarSolicitud(Socio socio, String idSolicitud) {
-        socio.borrarSolicitud(idSolicitud);
+    public void borrarSolicitud(Socio socio, Solicitud solicitud, Long idAct) {
+        repositorioActividad.eliminarSolicitud(socio.getSocioId(), solicitud, idAct);
     }
 
 }

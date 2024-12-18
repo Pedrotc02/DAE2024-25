@@ -143,7 +143,7 @@ public class ControladorClub {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     //Modificar solicitud (user)
@@ -161,13 +161,13 @@ public class ControladorClub {
                                                 .findAny()
                                                 .orElseThrow(SolicitudNoExiste::new);
 
-            servicioClub.modificarSolicitud(solicitud, nuevosAcom);
+            solicitud = servicioClub.modificarSolicitud(solicitud, nuevosAcom);
 
         } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SolicitudNoExiste e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(mapeador.dto(solicitud));
     }
 
     //Borrar solicitud (user/admin)
@@ -185,13 +185,12 @@ public class ControladorClub {
                                     .findAny()
                                     .orElseThrow(SolicitudNoExiste::new);
 
-            servicioClub.borrarSolicitud(socio, solicitud.getSolicitudId());
+            servicioClub.borrarSolicitud(socio, solicitud, idact);
 
-        } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SolicitudNoExiste e ) {
+        } catch (TemporadaNoEncontrada | ActividadNoEncontrada | SolicitudNoExiste | SocioNoExiste e ) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (SocioNoExiste e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -213,7 +212,7 @@ public class ControladorClub {
     //Si es la direccion, devuelve todas las solicitudes de la actividad
     @GetMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
     public ResponseEntity<List<DTOSolicitud>> obtenerSolicitudesActividad(@PathVariable int anio, @PathVariable Long idact,
-                                                                          @RequestParam(required = false) String socioId,
+                                                                          @RequestParam(required = false) String emailSocio,
                                                                           Principal usuarioAutenticado) {
         List<Solicitud> solicitudes;
 
@@ -233,7 +232,7 @@ public class ControladorClub {
                 //por eso revisa las solicitudes ésta, y entonces devuelve al socio una lista con 1 item o 0
                 solicitudes = servicioClub.revisarSolicitudes(EJEMPLO_SOCIO, idact)
                                            .stream()
-                                           .filter(s-> s.getSocioId().equals(socioId))
+                                           .filter(s-> s.getSocioId().equals(emailSocio))
                                            .toList();
             }
 

@@ -45,11 +45,11 @@ public class Autorizacion {
                 // borrar solicitud de un socio, modificar solicitud de un socio,
                 // obtener solicitudes de una actividad --> si es admin, todas, si es socio, sólo la suya
                         .requestMatchers(HttpMethod.DELETE, "/clubsocios/temporadas/{anio}/actividades/{idact}/solicitudes")
-                            .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
+                            .access("hasRole('ADMIN') or hasRole('USER')")
                         .requestMatchers(HttpMethod.PUT, "/clubsocios/temporadas/{anio}/actividades/{idact}/solicitudes")
-                            .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
+                            .access("hasRole('ADMIN') or hasRole('USER')")
                         .requestMatchers(HttpMethod.GET, "/clubsocios/temporadas/{anio}/actividades/{idact}/solicitudes")
-                            .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
+                            .access("hasRole('ADMIN') or hasRole('USER')")
                 )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sM -> sM.disable())

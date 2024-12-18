@@ -38,7 +38,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testNuevaTemporada() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
         var temporada24 = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada24);
 
@@ -53,7 +53,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testNuevaActividad() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
         var temporada24 = servicio.crearTemporada(direccion, new Temporada(2024));
 
         var noValida = new Actividad("Visita a museo", "Descricion", -15, -30, LocalDate.parse("2024-12-25"), LocalDate.parse("2024-10-12"), LocalDate.parse("2024-12-21"));
@@ -88,7 +88,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testRegistrarSolicitud() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var temporada = servicio.crearTemporada(direccion, new Temporada(2024));
 
@@ -129,7 +129,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testBuscarTemporada() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
@@ -142,7 +142,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testBuscarActividad() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
@@ -159,21 +159,21 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testLoginSocio() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "12345678A", "690123456", "123456", EstadoCuota.PAGADA);
         servicio.crearSocio(socio);
 
-        assertThat(servicio.login("error@gmail.com", "prueba")).isEmpty();
-        assertThat(servicio.login("prueba@gmail.com", "claveError")).isEmpty();
-        assertThat(servicio.login("prueba@gmail.com", "123456")).hasValueSatisfying(s -> s.getSocioId().equals(socio.getSocioId()));
+        assertThat(servicio.buscarSocio("error@gmail.com")).isEmpty();
+        //assertThat(servicio.buscarSocio("prueba@gmail.com")).isEmpty();
+        assertThat(servicio.buscarSocio("prueba@gmail.com")).hasValueSatisfying(s -> s.getSocioId().equals(socio.getSocioId()));
     }
 
     @Test
     @DirtiesContext
     void testOperacionDireccion() {
         var temporada = new Temporada(2024);
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
 
         assertThatThrownBy(() -> servicio.crearTemporada(socio1, temporada)).isInstanceOf(OperacionDeDireccion.class);
@@ -190,7 +190,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testActualizaEstado() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PENDIENTE);
         servicio.crearSocio(socio);
@@ -202,7 +202,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testResetearEstadoCuota() {
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var socio1 = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
         var socio2 = new Socio("edu@gmail.com", "Edu", "Apellido1 Apellido2", "22222222M", "690123456", "123456", EstadoCuota.PAGADA);
@@ -222,7 +222,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testAsignarPlazasFinal(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
@@ -247,7 +247,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testAsignarPlazasFinInscripcion(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
@@ -277,7 +277,7 @@ public class TestServicioClub {
     @Test
     @DirtiesContext
     void testProcesarInscripcion(){
-        var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
+        var direccion = servicio.buscarSocio("direccion@clubsocios.es").get();
 
         var temporada = new Temporada(2024);
         servicio.crearTemporada(direccion, temporada);
