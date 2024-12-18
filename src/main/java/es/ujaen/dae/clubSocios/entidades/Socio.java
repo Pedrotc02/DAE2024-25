@@ -36,7 +36,7 @@ public class Socio {
     @Pattern(regexp = "^(\\+34|0034|34)?[6789]\\d{8}$", message = "No es un número de teléfono válido")
     private String tlf;
     @NotBlank
-    @Pattern(regexp = "^[a-zA-Z0-9]{6,}$", message = "La clave debe tener más de 5 caracteres")
+    @Pattern(regexp = "^[a-zA-Z0-9./$]{6,}$", message = "La clave debe tener más de 5 caracteres")
     private String claveAcceso;
     @NotNull
     private EstadoCuota estadoCuota;
