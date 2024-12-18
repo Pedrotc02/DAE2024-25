@@ -35,8 +35,10 @@ public class Autorizacion {
                         .requestMatchers(HttpMethod.POST,"/clubsocios/temporadas/{anio}/actividades/{idact}/solicitudes")
                             .hasRole("USER")
 
-                // Sólo el admin puede: crear temporadas
+                // Sólo el admin puede: crear temporadas y crear actividades
                         .requestMatchers(HttpMethod.POST, "/clubsocios/temporadas")
+                            .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/clubsocios/temporadas/{anio}/actividades")
                             .hasRole("ADMIN")
 
                 // Cualquiera entre admin y user.

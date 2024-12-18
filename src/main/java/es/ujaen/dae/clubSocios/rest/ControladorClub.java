@@ -85,10 +85,12 @@ public class ControladorClub {
         Temporada temporada;
         try {
             temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada("Temporada " + anio + " no encontrada"));
+            servicioClub.crearActividad(EJEMPLO_SOCIO, temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
         } catch (TemporadaNoEncontrada e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (ActividadYaRegistrada e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        servicioClub.crearActividad(EJEMPLO_SOCIO, temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
