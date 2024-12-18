@@ -27,21 +27,10 @@ public class Autenticacion implements UserDetailsService {
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException{
         Socio socio = servicioClub.buscarSocio(userName).orElseThrow(SocioNoExiste::new);
 
-        System.out.println("Usuario encontrado: " + socio.getSocioId());
-        System.out.println("Nombre: " + socio.getNombre());
-        System.out.println("Contraseña codificada: " + socio.getClaveAcceso());
-
-        UserDetails userDetails = User.withUsername(socio.getSocioId())
+        return User.withUsername(socio.getSocioId())
                 .password(socio.getClaveAcceso())
                 .roles(socio.getNombre().equals("direccion") ? "ADMIN" : "USER")
                 .build();
-
-        System.out.println("Detalles del usuario para autenticación: " + userDetails);
-        return userDetails;
-//        return User.withUsername(socio.getSocioId())
-//                   .password(socio.getClaveAcceso())
-//                   .roles(userName.equals("direccion@clubsocios.es") ? "ROLE_ADMIN" : "ROLE_USER")
-//                   .build();
     }
 
 }

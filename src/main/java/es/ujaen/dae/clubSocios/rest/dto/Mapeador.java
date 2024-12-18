@@ -45,7 +45,7 @@ public class Mapeador {
                          dtoSocio.dni(),
                          dtoSocio.tlf(),
                          dtoSocio.claveAcceso(),
-                         dtoSocio.cuota());
+                         dtoSocio.estadoCuota());
     }
 
     public Socio entidadCoded(DTOSocio dtoSocio){
@@ -55,7 +55,7 @@ public class Mapeador {
                 dtoSocio.dni(),
                 dtoSocio.tlf(),
                 passwordEncoder.encode(dtoSocio.claveAcceso()),
-                dtoSocio.cuota());
+                dtoSocio.estadoCuota());
     }
 
     ///Después, actividades

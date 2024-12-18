@@ -161,7 +161,7 @@ public class TestServicioClub {
     void testLoginSocio() {
         var direccion = servicio.login("direccion@clubsocios.es", "serviceSecret").get();
 
-        var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "11111111M", "690123456", "123456", EstadoCuota.PAGADA);
+        var socio = new Socio("prueba@gmail.com", "Pedro", "Apellido1 Apellido2", "12345678A", "690123456", "123456", EstadoCuota.PAGADA);
         servicio.crearSocio(socio);
 
         assertThat(servicio.login("error@gmail.com", "prueba")).isEmpty();

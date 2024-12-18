@@ -1,10 +1,5 @@
 package es.ujaen.dae.clubSocios.rest;
-
-import es.ujaen.dae.clubSocios.entidades.Socio;
-import es.ujaen.dae.clubSocios.entidades.Temporada;
-import es.ujaen.dae.clubSocios.enums.EstadoSolicitud;
 import es.ujaen.dae.clubSocios.rest.dto.*;
-import es.ujaen.dae.clubSocios.servicios.ServicioClub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +15,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 @SpringBootTest(classes = es.ujaen.dae.clubSocios.app.Main.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -36,15 +29,9 @@ public class TestControladorClub {
 
     @LocalServerPort
     int localPort;
-    private String baseUrl;
-
-    @Autowired
-    private ServicioClub servicioClub;
 
     @Autowired
     PasswordEncoder passwordEncoder;
-
-    private Mapeador mapeador;
 
     private TestRestTemplate testRestTemplate;
 
@@ -52,68 +39,51 @@ public class TestControladorClub {
     void setUp() {
 //        String pwdEncoded = passwordEncoder.encode("serviceSecret");
 //        System.out.println("Password encoded: " + pwdEncoded);
-        mapeador = new Mapeador();
-        baseUrl = "http://localhost:" + localPort;
-        var restTemplateBuilder = new RestTemplateBuilder().rootUri(baseUrl);
+        var restTemplateBuilder = new RestTemplateBuilder()
+                .rootUri("http://localhost:" + localPort + "/clubsocios");
+
         testRestTemplate = new TestRestTemplate(restTemplateBuilder);
     }
 
-
-
-    @Test
-    @DirtiesContext
-    void testCrearTemporada() {
-        int anio = 2025;
-        DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
-
-        ResponseEntity<Void> response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-                .postForEntity("/clubsocios/temporadas", dtoTemporada, Void.class);
-        System.out.println("Código de estado: " + response.getStatusCode());
-        System.out.println("Respuesta: " + response.getBody());
-
-        assertEquals("Respuesta al admin", HttpStatus.CREATED, response.getStatusCode());
-
-        // Intentar crear una temporada con el mismo año
-        response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-                .postForEntity("/clubsocios/temporadas", dtoTemporada, Void.class);
-        assertEquals("Respuesta al admin misma temporada", HttpStatus.CONFLICT, response.getStatusCode());
-
-        // Intentar que otra persona cree una temporada distinta
-        DTOTemporada temp2 = new DTOTemporada(1L, 2026);
-
-        response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456").postForEntity("/clubsocios/temporadas", temp2, Void.class);
-
-        assertEquals("Respuesta a no admin distinta temporada", HttpStatus.UNAUTHORIZED, response.getStatusCode());
-
-    }
-
-    @Test
-    @DirtiesContext
-    void testObtenerTemporada() {
-        int anio = 2025;
-
-        Temporada temporada = new Temporada(anio);
-
-        servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new), temporada);
-
-        ResponseEntity<DTOTemporada> response = testRestTemplate.getForEntity(baseUrl + "/clubsocios/temporadas/" + anio, DTOTemporada.class);
-
-        assertEquals("status", HttpStatus.OK, response.getStatusCode());
-        assertEquals("año", anio, Objects.requireNonNull(response.getBody()).anio());
-    }
-
+    ///Passed
     @Test
     @DirtiesContext
     void testCrearSocio() {
-        DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
-                "690123456", "123456", EstadoCuota.PAGADA);
+        DTOSocio invalid = new DTOSocio("pruebagmail.com", "Pedro", "", "12348A",
+                "69456", "123456", EstadoCuota.PAGADA);
 
-        ResponseEntity<Void> response = testRestTemplate.postForEntity(baseUrl + "/clubsocios/socios", dtoSocio, Void.class);
+        ResponseEntity<Void> response = testRestTemplate.postForEntity(
+                "/socios",
+                invalid,
+                Void.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        var dtoSocio = new DTOSocio(
+                "pepfer@gmail.com",
+                "Pepito",
+                "Fernández",
+                "12345678A",
+                "645367898",
+                "pepfer",
+                EstadoCuota.PENDIENTE
+        );
+
+        response = testRestTemplate.postForEntity(
+                "/socios",
+                dtoSocio,
+                Void.class
+        );
 
         assertEquals("respuesta", HttpStatus.CREATED, response.getStatusCode());
 
         // Intentar crear un socio con el mismo email
-        response = testRestTemplate.postForEntity(baseUrl + "/clubsocios/socios", dtoSocio, Void.class);
+        response = testRestTemplate.postForEntity(
+                "/socios",
+                dtoSocio,
+                Void.class
+        );
 
         assertEquals("respuesta", HttpStatus.CONFLICT, response.getStatusCode());
     }
@@ -123,140 +93,338 @@ public class TestControladorClub {
     void testObtenerSocio() {
         DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
                 "690123456", "123456", EstadoCuota.PAGADA);
-        servicioClub.crearSocio(mapeador.entidad(dtoSocio));
 
-        ResponseEntity<DTOSocio> response = testRestTemplate//.withBasicAuth("prueba@gmail.com", "123456")
-                .getForEntity(baseUrl + "/clubsocios/socios/prueba@gmail.com?clave=123456", DTOSocio.class);
+        testRestTemplate.postForEntity(
+                "/socios",
+                dtoSocio,
+                DTOSocio.class
+        );
+
+        ResponseEntity<DTOSocio> response = testRestTemplate
+                .getForEntity(
+                        "/socios/{email}",
+                        DTOSocio.class,
+                        dtoSocio.id()
+                );
 
         assertEquals("status", HttpStatus.OK, response.getStatusCode());
         assertEquals("email", dtoSocio.id(), Objects.requireNonNull(response.getBody()).id());
     }
 
+    /// Passed
+    @Test
+    @DirtiesContext
+    void testCrearTemporada() {
+        int anio = 2025;
+        DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
+
+        ResponseEntity<Void> response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
+
+        assertEquals("Respuesta al admin", HttpStatus.CREATED, response.getStatusCode());
+
+        // Intentar crear una temporada con el mismo año
+        response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
+        assertEquals("Respuesta al admin misma temporada", HttpStatus.CONFLICT, response.getStatusCode());
+
+        // Intentar que otra persona (no logeada) cree una temporada distinta
+        DTOTemporada temp2 = new DTOTemporada(1L, 2026);
+
+        response = testRestTemplate.postForEntity(
+                "/temporadas",
+                temp2,
+                Void.class
+        );
+
+        assertEquals("Respuesta a no admin distinta temporada", HttpStatus.UNAUTHORIZED, response.getStatusCode());
+
+    }
+
+    /// Passed
+    @Test
+    @DirtiesContext
+    void testObtenerTemporada() {
+        int anio = 2025;
+        DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
+
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
+
+        ResponseEntity<DTOTemporada> response = testRestTemplate.getForEntity(
+                "/temporadas/{anio}",
+                DTOTemporada.class,
+                dtoTemporada.anio()
+        );
+
+        assertEquals("status", HttpStatus.OK, response.getStatusCode());
+        assertEquals("año", anio, Objects.requireNonNull(response.getBody()).anio());
+    }
+
+    ///Passed
     @Test
     @DirtiesContext
     void testCrearActividad() {
         int anio = 2025;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
-        servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret")
-                .orElseThrow(SocioNoExiste::new), mapeador.entidad(dtoTemporada));
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
+
+        testRestTemplate.getForEntity(
+                "/temporadas/{anio}",
+                DTOTemporada.class,
+                dtoTemporada.anio()
+        );
 
         DTOActividad dtoActividad = new DTOActividad(1L, "Clases de flamenco",
                 "Aqui se dara clases de flamenco", 35, 30, 30,
                 LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
 
+
         ResponseEntity<DTOActividad> response = testRestTemplate
-                //.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-                .postForEntity("/clubsocios/temporadas/" + anio + "/actividades", dtoActividad, DTOActividad.class);
+                .withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas/{anio}/actividades",
+                        dtoActividad,
+                        DTOActividad.class,
+                        dtoTemporada.anio()
+                );
 
         assertEquals("status", HttpStatus.CREATED, response.getStatusCode());
     }
 
+    ///Passed
     @Test
     @DirtiesContext
     void testObtenerActividadesTemporada() {
 
+        ///Creo la temporada
         int anio = 2024;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
 
-        servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new), mapeador.entidad(dtoTemporada));
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
 
+        ///Creo las actividades
         DTOActividad dtoActividad1 = new DTOActividad(1L, "Clases de flamenco",
                 "Aqui se dara clases de flamenco", 35, 30, 30, LocalDate.parse("2024-10-12"),
                 LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
+
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas/{anio}/actividades",
+                        dtoActividad1,
+                        DTOActividad.class,
+                        dtoTemporada.anio()
+                );
 
         DTOActividad dtoActividad2 = new DTOActividad(2L, "Clases de guitarra",
                 "Aqui se dara clases de guitarra", 20, 20, 20, LocalDate.parse("2024-10-15"),
                 LocalDate.parse("2024-10-25"), LocalDate.parse("2024-11-20"));
 
-        servicioClub.crearActividad(servicioClub.login("direccion@clubsocios.es", "serviceSecret")
-                .orElseThrow(SocioNoExiste::new), dtoTemporada.id(), mapeador.entidad(dtoActividad1));
-        servicioClub.crearActividad(servicioClub.login("direccion@clubsocios.es", "serviceSecret")
-                .orElseThrow(SocioNoExiste::new), dtoTemporada.id(), mapeador.entidad(dtoActividad2));
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas/{anio}/actividades",
+                        dtoActividad2,
+                        DTOActividad.class,
+                        dtoTemporada.anio()
+                );
 
-        ResponseEntity<DTOActividad[]> response = testRestTemplate.getForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades", DTOActividad[].class);
+        ///Obtengo todas las actividades de una temporada
+        ResponseEntity<DTOActividad[]> response = testRestTemplate.getForEntity(
+                "/temporadas/{anio}/actividades",
+                DTOActividad[].class,
+                dtoTemporada.anio()
+        );
 
         assertEquals("status", HttpStatus.OK, response.getStatusCode());
         assertEquals("numero de actividades", 2, Objects.requireNonNull(response.getBody()).length);
     }
 
+    ///Passed
     @Test
     @DirtiesContext
     void testObtenerActividad() {
+
+        ///Creo la tempòrada
         int anio = 2024;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
-        Temporada temporada = mapeador.entidad(dtoTemporada);
-        servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-                temporada);
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
 
-        DTOActividad dtoActividad = new DTOActividad(1L, "Clases de flamenco",
-                "Aqui se dara clases de flamenco", 35, 30, 30,
-                LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
+        ///Creo la actividad
+        DTOActividad dtoActividad1 = new DTOActividad(1L, "Clases de flamenco",
+                "Aqui se dara clases de flamenco", 35, 30, 30, LocalDate.parse("2024-10-12"),
+                LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
 
-        servicioClub.crearActividad(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-                temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas/{anio}/actividades",
+                        dtoActividad1,
+                        DTOActividad.class,
+                        dtoTemporada.anio()
+                );
 
         ResponseEntity<DTOActividad[]> responseActividades = testRestTemplate.getForEntity(
-                baseUrl + "/clubsocios/temporadas/" + anio + "/actividades", DTOActividad[].class);
+                "/temporadas/{anio}/actividades", DTOActividad[].class, dtoTemporada.anio());
         Long actividadId = Objects.requireNonNull(responseActividades.getBody())[0].id();
 
         ResponseEntity<DTOActividad> response = testRestTemplate.getForEntity(
-                baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/" + actividadId, DTOActividad.class);
+                 "/temporadas/{anio}/actividades/{idact}",
+                DTOActividad.class,
+                dtoTemporada.anio(),
+                actividadId
+        );
 
         assertEquals("status", HttpStatus.OK, response.getStatusCode());
-        assertEquals("titulo", dtoActividad.titulo(), Objects.requireNonNull(response.getBody()).titulo());
+        assertEquals("titulo", dtoActividad1.titulo(), Objects.requireNonNull(response.getBody()).titulo());
+
+        ///Comprobar algunos parámetros para asegurar que el objeto devuelto es correcto
+        DTOActividad actividad = response.getBody();
+        assertEquals("", actividad.titulo(), dtoActividad1.titulo());
+        assertEquals("", actividad.id(), dtoActividad1.id());
+        assertEquals("", actividad.descripcion(), dtoActividad1.descripcion());
     }
 
     @Test
     @DirtiesContext
     void testSolicitarParticipacionActividad() {
+
+        ///Creo la temporada
         int anio = 2024;
         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
-        Temporada temporada = mapeador.entidad(dtoTemporada);
-        servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-                temporada);
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/temporadas",
+                        dtoTemporada,
+                        Void.class
+                );
 
+        ///Creo la actividad
         DTOActividad dtoActividad = new DTOActividad(1L, "Clases de flamenco",
-                "Aqui se dara clases de flamenco", 35, 30, 30,
-                LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
+                "Aqui se dara clases de flamenco", 35, 30, 30, LocalDate.parse("2024-10-12"),
+                LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
 
-        servicioClub.crearActividad(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-                temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
+        testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .postForEntity(
+                        "/clubsocios/temporadas/{anio}/actividades",
+                        dtoActividad,
+                        DTOActividad.class,
+                        dtoTemporada.anio()
+                );
 
-        DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
-                "690123456", "123456", EstadoCuota.PAGADA);
-        servicioClub.crearSocio(mapeador.entidad(dtoSocio));
+        ///Creo el socio
+        DTOSocio dtoSocio = new DTOSocio("pepfer@gmail.com", "Pepito", "Fernández", "11111111M",
+                "645367898", "pepfer", EstadoCuota.PAGADA);
 
-        ResponseEntity<Void> response = testRestTemplate//.withBasicAuth("prueba@gmail.com", "123456")
-                .postForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes?numAcom=2", dtoSocio, Void.class);
+        testRestTemplate.postForEntity( "/socios", dtoSocio, Void.class);
+
+        int numAcom = 2;
+
+        ///EL socio hace la solicitud
+        ResponseEntity<Void> response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+                .postForEntity(
+                        "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}&numAcom={numAcom}",
+                        null,
+                        Void.class,
+                        dtoTemporada.anio(),
+                        dtoActividad.id(),
+                        dtoSocio.id(),
+                        numAcom
+                );
 
         assertEquals("status", HttpStatus.CREATED, response.getStatusCode());
     }
 
      @Test
      @DirtiesContext void testObtenerSolicitudesActividad() {
+         ///Creo la temporada
          int anio = 2024;
          DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
-         Temporada temporada = mapeador.entidad(dtoTemporada);
-         servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-         temporada);
+         testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                 .postForEntity(
+                         "/temporadas",
+                         dtoTemporada,
+                         Void.class
+                 );
+
+         ///Creo la actividad
          DTOActividad dtoActividad = new DTOActividad(1L, "Clases de flamenco",
-         "Aqui se dara clases de flamenco", 35, 30, 30,
-         LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
+                 "Aqui se dara clases de flamenco", 35, 30, 30, LocalDate.parse("2024-10-12"),
+                 LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
 
-         servicioClub.crearActividad(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-         temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
+         testRestTemplate
+                 .withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                 .postForEntity(
+                         "/clubsocios/temporadas/{anio}/actividades",
+                         dtoActividad,
+                         DTOActividad.class,
+                         dtoTemporada.anio()
+                 );
 
-         DTOSocio dtoSocio = new DTOSocio("direccion@clubsocios.es", "Pedro", "Apellido1", "12345678A",
-         "690123456", "serviceSecret", EstadoCuota.PAGADA);
-         servicioClub.crearSocio(mapeador.entidad(dtoSocio));
+         ///Creo el socio
+         DTOSocio dtoSocio = new DTOSocio("pepfer@gmail.com", "Pepito", "Fernández", "11111111M",
+                 "645367898", "pepfer", EstadoCuota.PAGADA);
 
-         ResponseEntity<Void> postResponse = testRestTemplate//.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-         .postForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes?numAcom=2", dtoSocio, Void.class);
+         testRestTemplate.postForEntity(
+                 "/socios",
+                 dtoSocio,
+                 Void.class
+         );
+
+
+         int numAcom = 2;
+
+         ///EL socio hace la solicitud
+         ResponseEntity<DTOSolicitud> postResponse = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+                 .postForEntity(
+                         "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}&numAcom={numAcom}",
+                         null,
+                         DTOSolicitud.class,
+                         dtoTemporada.anio(),
+                         dtoActividad.id(),
+                         dtoSocio.id(),
+                         numAcom
+                         );
 
          assertEquals("Estado post", HttpStatus.CREATED, postResponse.getStatusCode());
 
-         ResponseEntity<DTOSolicitud[]> response = testRestTemplate //.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-         .getForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/"+ dtoActividad.id() + "/solicitudes", DTOSolicitud[].class);
+         ///Obtener solicitudes para la actividad (dirección)
+         ResponseEntity<DTOSolicitud[]> todasSolicitudes = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+         .getForEntity(
+                 "/temporadas/{anio}/actividades/{idact}/solicitudes",
+                 DTOSolicitud[].class
+         );
+
+         ResponseEntity<DTOSolicitud[]> response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                 .getForEntity(
+                         "/temporadas/{anio}/actividades/{idact}/solicitudes",
+                         DTOSolicitud[].class
+                 );
 
          assertEquals("Estado get", HttpStatus.OK, response.getStatusCode());
 
@@ -270,53 +438,146 @@ public class TestControladorClub {
      // Crear temporada
      int anio = 2024;
      DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
-     Temporada temporada = mapeador.entidad(dtoTemporada);
-
-     servicioClub.crearTemporada(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-     temporada);
+     testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+             .postForEntity(
+                     "/temporadas",
+                     dtoTemporada,
+                     Void.class
+             );
 
      // Crear actividad
      DTOActividad dtoActividad = new DTOActividad(1L, "Clases de flamenco",
      "Aqui se dara clases de flamenco", 35, 30, 30,
      LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
 
-     servicioClub.crearActividad(servicioClub.login("direccion@clubsocios.es", "serviceSecret").orElseThrow(SocioNoExiste::new),
-     temporada.getTemporadaId(), mapeador.entidad(dtoActividad));
-
-     // Obtener actividad
-     ResponseEntity<DTOActividad[]> responseActividades = testRestTemplate.getForEntity(
-     baseUrl + "/clubsocios/temporadas/" + anio + "/actividades", DTOActividad[].class);
+     testRestTemplate
+             .withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+             .postForEntity("/temporada/{anio}/actividades",
+                     dtoActividad,
+                     DTOActividad.class,
+                     dtoTemporada.id()
+             );
 
      // Crear socio
      DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
      "690123456", "123456", EstadoCuota.PAGADA);
 
-     servicioClub.crearSocio(mapeador.entidad(dtoSocio));
+     testRestTemplate.postForEntity(
+             "/socios",
+             dtoSocio,
+             DTOSocio.class
+     );
 
-     // La crea bien
+     //El socio solicita la participación en una actividad
+     int numAcom = 2;
      ResponseEntity<DTOSolicitud[]> respuestaPost = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
-     .postForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes?numAcom=2", dtoSocio, DTOSolicitud[].class);
+     .postForEntity(
+             "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}&numAcom={numAcom}",
+             null,
+             DTOSolicitud[].class,
+             dtoTemporada.anio(),
+             dtoActividad.id(),
+             dtoSocio.id(),
+             numAcom
+             );
 
-     // Obtener las solicitudes
-     ResponseEntity<DTOSolicitud> test = testRestTemplate.getForEntity("/temporadas/" + anio + "/actividades/1/solicitudes", DTOSolicitud.class);
+     // Obtener las solicitudes de la actividad hechas por el socio, debe ser 1
+         ResponseEntity<DTOSolicitud[]> respuestaSolicitudSocio = testRestTemplate.
+                 withBasicAuth("prueba@gmail.com", "123456").getForEntity(
+             "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}",
+             DTOSolicitud[].class,
+             dtoTemporada.anio(),
+             dtoActividad.id(),
+             dtoSocio.id()
+         );
 
-     // Respuesta con credenciales del socio, no de admin
-     ResponseEntity<DTOSolicitud[]> respuestaGet = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
-     .getForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes", DTOSolicitud[].class);
-
-     // No puede entrar, creo que por credenciales deuvelve 404
-     ResponseEntity<DTOSolicitud[]> responseSolicitudes = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
-     .getForEntity(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes", DTOSolicitud[].class);
-
-     String solicitudId = Objects.requireNonNull(responseSolicitudes.getBody())[0].id();
-
-     DTOSolicitud dtoSolicitudModificada = new DTOSolicitud(solicitudId, 3, EstadoSolicitud.PENDIENTE, LocalDateTime.now(), 0, dtoSocio.id());
-
+     //Modificar la solicitud con un nuevo número de acompañantes y el mismo socio
+     int nuevosAcom = 3;
      ResponseEntity<DTOSolicitud> response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
-     .exchange(baseUrl + "/clubsocios/temporadas/" + anio + "/actividades/1/solicitudes", HttpMethod.PUT, new HttpEntity<>(dtoSolicitudModificada), DTOSolicitud.class);
+     .exchange(
+             "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}&nuevosAcom={nuevosAcom}",
+             HttpMethod.PUT,
+             HttpEntity.EMPTY,
+             DTOSolicitud.class,
+             dtoTemporada.anio(),
+             dtoActividad.id(),
+             dtoSocio.id(),
+             nuevosAcom
+             );
 
      assertEquals("status", HttpStatus.OK, response.getStatusCode());
      assertEquals("numAcom", 3, Objects.requireNonNull(response.getBody()).numAcom());
+     }
+
+     @Test
+     @DirtiesContext
+     void testBorrarSolicitud() {
+         // Crear temporada
+         int anio = 2024;
+         DTOTemporada dtoTemporada = new DTOTemporada(1L, anio);
+         testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                 .postForEntity(
+                         "/temporadas",
+                         dtoTemporada,
+                         Void.class
+                 );
+
+         // Crear actividad
+         DTOActividad dtoActividad = new DTOActividad(1L, "Clases de flamenco",
+                 "Aqui se dara clases de flamenco", 35, 30, 30,
+                 LocalDate.parse("2024-10-12"), LocalDate.parse("2024-10-30"), LocalDate.parse("2024-11-16"));
+
+         testRestTemplate
+                 .withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                 .postForEntity("/temporada/{anio}/actividades",
+                         dtoActividad,
+                         DTOActividad.class,
+                         dtoTemporada.id()
+                 );
+
+         // Crear socio
+         DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
+                 "690123456", "123456", EstadoCuota.PAGADA);
+
+         testRestTemplate.postForEntity(
+                 "/socios",
+                 dtoSocio,
+                 DTOSocio.class
+         );
+
+         //El socio solicita la participación en una actividad
+         int numAcom = 2;
+         ResponseEntity<DTOSolicitud[]> respuestaPost = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+                 .postForEntity(
+                         "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}&numAcom={numAcom}",
+                         null,
+                         DTOSolicitud[].class,
+                         dtoTemporada.anio(),
+                         dtoActividad.id(),
+                         dtoSocio.id(),
+                         numAcom
+                 );
+
+         // Obtener las solicitudes de la actividad hechas por el socio, debe ser 1
+         ResponseEntity<DTOSolicitud[]> respuestaSolicitudSocio = testRestTemplate.
+                 withBasicAuth("prueba@gmail.com", "123456").getForEntity(
+                         "/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}",
+                         DTOSolicitud[].class,
+                         dtoTemporada.anio(),
+                         dtoActividad.id(),
+                         dtoSocio.id()
+                 );
+
+         ResponseEntity<Void> deleteResponse = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+                 .exchange("/temporadas/{anio}/actividades/{idact}/solicitudes?emailSocio={emailSocio}",
+                         HttpMethod.DELETE,
+                         HttpEntity.EMPTY,
+                         Void.class,
+                         dtoTemporada.anio(),
+                         dtoActividad.id(),
+                         dtoSocio.id());
+
+         assertEquals("status", HttpStatus.OK, deleteResponse.getStatusCode());
      }
 
 }

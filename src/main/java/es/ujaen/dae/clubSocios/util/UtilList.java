@@ -9,6 +9,6 @@ import java.util.Collections;
 
 public class UtilList {
     public static final Socio EJEMPLO_SOCIO = new Socio("direccion@clubsocios.es", "direccion",
-            "-", "99999999Z", "953897654", "$2a$10$231.hQz4p2Db4dgtjFA.kOequXNQDAdCfxXBB8009BT15/PfQjJfa",
+            "-", "99999999Z", "953897654", new BCryptPasswordEncoder().encode("serviceSecret"),
             EstadoCuota.PAGADA);
 }

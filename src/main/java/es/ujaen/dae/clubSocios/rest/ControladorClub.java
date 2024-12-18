@@ -39,9 +39,8 @@ public class ControladorClub {
 
     //Crear una temporada (admin)
     @PostMapping("/temporadas")
-    public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada, Principal principal) {
+    public ResponseEntity<Void> nuevaTemporada(@RequestBody DTOTemporada dtoTemporada) {
         try {
-            System.out.println("Usuario autenticado nueva temporada: " + principal.getName());
             servicioClub.crearTemporada(EJEMPLO_SOCIO, mapeador.entidad(dtoTemporada));
         } catch (TemporadaYaRegistrada e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -150,7 +149,7 @@ public class ControladorClub {
     //Modificar solicitud (user)
     @PutMapping("/temporadas/{anio}/actividades/{idact}/solicitudes")
     public ResponseEntity<DTOSolicitud> modificarSolicitud(@PathVariable int anio, @PathVariable Long idact,
-                                                           @RequestParam int nuevosAcom, @RequestParam String emailSocio) {
+                                                           @RequestParam String emailSocio, @RequestParam int nuevosAcom) {
         Solicitud solicitud;
         try {
             Temporada temporada = servicioClub.buscarTemporada(anio).orElseThrow(() -> new TemporadaNoEncontrada(""));

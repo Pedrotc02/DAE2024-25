@@ -1,5 +1,6 @@
 package es.ujaen.dae.clubSocios.security;
 
+import es.ujaen.dae.clubSocios.excepciones.SocioNoExiste;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,11 +22,7 @@ public class Autorizacion {
 
     @Bean
     public SecurityFilterChain autorizaciones(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sM -> sM.disable())
-                .httpBasic(httpBasic -> httpBasic.realmName("clubsocios"))
-                .authorizeRequests(auth -> auth
+        return httpSecurity.authorizeRequests(auth -> auth
                 // Todos pueden crear su usuario y ver las actividades de una temporada en particular,
                 // además de buscar una temporada
                         .requestMatchers(HttpMethod.POST,"/clubsocios/socios")
@@ -52,6 +49,9 @@ public class Autorizacion {
                         .requestMatchers(HttpMethod.GET, "/clubsocios/temporadas/{anio}/actividades/{idact}/solicitudes")
                             .access(String.valueOf(new WebExpressionAuthorizationManager("hasRole('ADMIN') or (hasRole('USER') and #emailSocio == principal.username)")))
                 )
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sM -> sM.disable())
+                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 }

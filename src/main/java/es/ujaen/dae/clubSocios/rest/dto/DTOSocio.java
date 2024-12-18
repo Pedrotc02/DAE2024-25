@@ -11,5 +11,5 @@ public record DTOSocio(
     String dni,
     String tlf,
     String claveAcceso,
-    EstadoCuota cuota) {
+    EstadoCuota estadoCuota) {
 }
