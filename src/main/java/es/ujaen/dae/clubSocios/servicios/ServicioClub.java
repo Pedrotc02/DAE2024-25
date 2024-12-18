@@ -252,7 +252,13 @@ public class ServicioClub {
     }
 
     public void borrarSolicitud(Socio socio, Solicitud solicitud, Long idAct) {
+        Actividad actividad = repositorioActividad.buscarPorId(idAct)
+                .orElseThrow(() -> new ActividadNoEncontrada("La actividad con ID " + idAct + " no existe."));
+
         repositorioActividad.eliminarSolicitud(socio.getSocioId(), solicitud, idAct);
+        actividad.quitarSolicitud(solicitud);
+        repositorioActividad.actualizar(actividad);
+
     }
 
 }

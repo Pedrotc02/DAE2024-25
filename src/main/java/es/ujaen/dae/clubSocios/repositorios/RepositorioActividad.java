@@ -96,14 +96,15 @@ public class RepositorioActividad {
 
     //borrar una solicitud (necesita un socio y una actividad, además de la propia solicitud)
     public void eliminarSolicitud(String socioId, Solicitud solicitud, Long actividadId) {
-        List<Solicitud> solicitudes = listadoSolicitudes(actividadId);
 
-        boolean existeSolicitud = solicitudes.stream().anyMatch(s -> s.getSocioId().equals(socioId));
+        Solicitud solicitudGestionada = em.find(Solicitud.class, solicitud.getSolicitudId());
 
-        if (!existeSolicitud)
+        if (solicitudGestionada == null ||
+                !solicitudGestionada.getSocioId().equals(socioId)) {
             throw new SolicitudNoExiste();
+        }
 
-        em.remove(em.merge(solicitud));
+        em.remove(solicitudGestionada);
     }
 
     public Solicitud actualizarSolicitud(Solicitud solicitud) {
