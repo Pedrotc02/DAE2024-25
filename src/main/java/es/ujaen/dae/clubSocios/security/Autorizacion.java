@@ -40,7 +40,8 @@ public class Autorizacion {
                             .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/clubsocios/temporadas/{anio}/actividades")
                             .hasRole("ADMIN")
-
+                        .requestMatchers(HttpMethod.PUT, "/clubsocios/socios/{email}")
+                            .hasRole("ADMIN")
                 // Cualquiera entre admin y user.
                 // borrar solicitud de un socio, modificar solicitud de un socio,
                 // obtener solicitudes de una actividad --> si es admin, todas, si es socio, sólo la suya

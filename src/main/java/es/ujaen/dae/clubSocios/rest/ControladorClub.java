@@ -3,6 +3,7 @@ package es.ujaen.dae.clubSocios.rest;
 import es.ujaen.dae.clubSocios.entidades.Actividad;
 import es.ujaen.dae.clubSocios.entidades.Solicitud;
 import es.ujaen.dae.clubSocios.entidades.Temporada;
+import es.ujaen.dae.clubSocios.enums.EstadoCuota;
 import es.ujaen.dae.clubSocios.excepciones.*;
 import es.ujaen.dae.clubSocios.rest.dto.*;
 import es.ujaen.dae.clubSocios.entidades.Socio;
@@ -77,6 +78,19 @@ public class ControladorClub {
         } catch (SocioNoExiste socioNoExiste) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    //Sólo puede admin
+    @PutMapping("/socios/{email}")
+    public ResponseEntity<DTOSocio> pagarCuotaSocio(@PathVariable String email){
+        Socio socio;
+        try {
+            servicioClub.buscarSocio(email).orElseThrow(SocioNoExiste::new);
+            socio = servicioClub.actualizarEstadoCuota(EJEMPLO_SOCIO, email, EstadoCuota.PAGADA);
+        } catch (SocioNoExiste e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(mapeador.dto(socio));
     }
 
     //Crear una actividad (admin)
@@ -244,5 +258,4 @@ public class ControladorClub {
                                             .map(s -> mapeador.dto(s))
                                             .toList());
     }
-
 }

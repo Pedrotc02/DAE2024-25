@@ -105,6 +105,42 @@ public class TestControladorClub {
         assertEquals("email", dtoSocio.id(), Objects.requireNonNull(response.getBody()).id());
     }
 
+    @Test
+    @DirtiesContext
+    void testPagarCuotaSocio() {
+        DTOSocio dtoSocio = new DTOSocio("prueba@gmail.com", "Pedro", "Apellido1", "12345678A",
+                "690123456", "123456", EstadoCuota.PAGADA);
+
+        testRestTemplate.postForEntity(
+                "/socios",
+                dtoSocio,
+                DTOSocio.class
+        );
+
+        var response = testRestTemplate.withBasicAuth("prueba@gmail.com", "123456")
+                .exchange(
+                        "/socios/{email}",
+                        HttpMethod.PUT,
+                        HttpEntity.EMPTY,
+                        DTOSocio.class,
+                        dtoSocio.id()
+                );
+
+        assertEquals("Debe ser admin", HttpStatus.FORBIDDEN, response.getStatusCode());
+
+        response = testRestTemplate.withBasicAuth("direccion@clubsocios.es", "serviceSecret")
+                .exchange(
+                        "/socios/{email}",
+                        HttpMethod.PUT,
+                        HttpEntity.EMPTY,
+                        DTOSocio.class,
+                        dtoSocio.id()
+                );
+
+        assertEquals("Debe dar OK", HttpStatus.OK, response.getStatusCode());
+        assertEquals("Debe ser PAGADA", EstadoCuota.PAGADA, response.getBody().estadoCuota());
+    }
+
     /// Passed
     @Test
     @DirtiesContext
@@ -805,8 +841,6 @@ public class TestControladorClub {
 
          assertEquals("status", HttpStatus.OK, deleteResponse.getStatusCode());
          assertEquals("No debería tener solicitudes ", 0, respuestaSolicitudSocio.getBody().length);
-
-
      }
 
 }
